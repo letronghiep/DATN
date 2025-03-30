@@ -3,12 +3,10 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
-    createShipping,
-    getShipping,
-    getShippingDetail,
-    removeShippingService,
-    updateDefaultShipping,
-    updateShipping,
+  createShipping,
+  getShipping,
+  getShippingDetail,
+  updateShipping
 } from "~/services/shipping";
 // import Modal from "../../Modal";
 import { Flex, Modal } from "antd";
@@ -58,39 +56,39 @@ function Shippings({
     setOpenModalDefault(!openModalDefault);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const handleDeleteShipping = async () => {
-    try {
-      setLoading(true);
-      const res = await removeShippingService(shippingId);
-      if (res.status === 200) {
-        setRefresh(!refresh);
-        setOpenModalDelete(false);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-      // setRefresh(false);
-    }
-  };
+  // const handleDeleteShipping = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await removeShippingService(shippingId);
+  //     if (res.status === 200) {
+  //       setRefresh(!refresh);
+  //       setOpenModalDelete(false);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   } finally {
+  //     setLoading(false);
+  //     // setRefresh(false);
+  //   }
+  // };
 
-  const handleDefaultShippingChange = async () => {
-    try {
-      setLoading(true);
-      const res = await updateDefaultShipping(shippingId);
-      if (res.status === 200) {
-        setOpenModalDefault(false);
-        setIsDefault(true);
-        setRefresh(!refresh);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-      // setRefresh(false);
-    }
-  };
+  // const handleDefaultShippingChange = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await updateDefaultShipping(shippingId);
+  //     if (res.status === 200) {
+  //       setOpenModalDefault(false);
+  //       setIsDefault(true);
+  //       setRefresh(!refresh);
+  //       setLoading(false);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   } finally {
+  //     setLoading(false);
+  //     // setRefresh(false);
+  //   }
+  // };
   const {
     register,
     control,

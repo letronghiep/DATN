@@ -7,6 +7,7 @@ const Sku = require("../models/sku.model");
 const Category = require("../models/category.model");
 const Attribute = require("../models/attribute.model");
 const Variation = require("../models/variation.model");
+const Order = require("../models/order.model");
 const {
   insertInventory,
   updateInventory,
@@ -24,11 +25,12 @@ const {
   addProductToWishList,
   increaseViewProduct,
 } = require("../models/repo/product.repo");
-const { getDetailUser } = require("../models/repo/user.repo");
-const { getIO } = require("../db/init.socket");
+// const { getDetailUser } = require("../models/repo/user.repo");
+// const { getIO } = require("../db/init.socket");
 const { pushNotifyToSystem } = require("./notification.service");
 const { Types } = require("mongoose");
 const { findAllDiscountSelect } = require("../models/repo/discount.repo");
+const { getBrandService } = require("./brands.service");
 
 /**
  * createProduct
@@ -323,13 +325,14 @@ const searchProductService = async ({
         ],
       }
     : {};
+    const category = product_category.split(",");
   const result = await paginate({
     model: Product,
     filter: {
       ...searchText,
       ...(product_status && { product_status }),
       ...(product_category && {
-        product_category: { $in: [Number(product_category)] },
+        product_category: { $in: [Number(category)] },
         ...query,
       }),
     },
@@ -445,6 +448,72 @@ const getInfoProductService = async ({ product_slug }) => {
 
   return productResult;
 };
+const getArrivalsProductService = async ({ limit = 50 }) => {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); // Lùi về 30 ngày trước
+
+  const newArrivals = await Product.find({ createdAt: { $gte: thirtyDaysAgo } })
+    .sort({ createdAt: -1 })
+    .limit(limit);
+  return newArrivals;
+};
+const getBestSellerService = async ({ limit }) => {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const bestSellers = await Order.aggregate([
+    { $match: { createdAt: { $gte: oneWeekAgo } } },
+    { $unwind: { path: "$order_products", preserveNullAndEmptyArrays: true } },
+    {
+      $unwind: {
+        path: "$order_products.item_products",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $match: {
+        "order_products.item_products.productId": {
+          $exists: true,
+          $type: "string",
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { $toObjectId: "$order_products.item_products.productId" },
+        totalSold: { $sum: "$order_products.item_products.quantity" },
+      },
+    },
+    { $sort: { totalSold: -1 } },
+    { $limit: limit },
+    {
+      $lookup: {
+        from: "products",
+        localField: "_id",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: "$_id",
+        product_name: "$product.product_name",
+        product_price: "$product.product_price",
+        product_slug: "$product.product_slug",
+        product_thumb: "$product.product_thumb",
+        totalSold: 1,
+      },
+    },
+  ]);
+
+  return bestSellers;
+};
+const getHomePageService = async () => {
+  const arrivalProduct = await getArrivalsProductService({ limit: 10 });
+  const bestSeller = await getBestSellerService({ limit: 8 });
+  return { arrivalProduct, bestSeller };
+};
 // END QUERY
 module.exports = {
   createProductService,
@@ -460,5 +529,8 @@ module.exports = {
   updateProductFavoriteService,
   addToWishListService,
   getCountFavoriteService,
-  increaseViewProductService
+  increaseViewProductService,
+  getArrivalsProductService,
+  getBestSellerService,
+  getHomePageService,
 };

@@ -4,6 +4,13 @@ import userReducer from "./slices/authSlice";
 import orderReducer from "./slices/seller/orderSlice";
 
 import variationReducer from "./slices/seller/variationSlice";
+import { categoriesApi } from "../apis/categoriesApi";
+import usersApi from "../apis/usersApi";
+import vouchersApi from "../apis/vouchersApi";
+import productsApi from "../apis/productsApi";
+import productFilterReducer from "./slices/productFilterSlice";
+import cartApi from "../apis/cartApis";
+import ordersApi from "../apis/ordersApi";
 // import dataReducer from "./data/data.reducer";
 // import useSpecModalReducer from "../hooks/useSpecModal";
 // import useLoginReducer from "../hooks/useLoginModal";
@@ -14,8 +21,15 @@ export const rootReducer = combineReducers({
   user: userReducer,
   order: orderReducer,
   variation: variationReducer,
+  filter: productFilterReducer,
   //   useSpecModal: useSpecModalReducer,
   //   useLoginModal: useLoginReducer,
   //   useRegisterModal: useRegisterReducer,
+  [categoriesApi.reducerPath]: categoriesApi.reducer,
+  [usersApi.reducerPath]: usersApi.reducer,
+  [vouchersApi.reducerPath]: vouchersApi.reducer,
+  [productsApi.reducerPath]: productsApi.reducer,
+  [cartApi.reducerPath]: cartApi.reducer,
+  [ordersApi.reducerPath]: ordersApi.reducer,
   cart: {},
 });

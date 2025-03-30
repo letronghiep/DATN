@@ -26,13 +26,12 @@ var categorySchema = new Schema(
       default: "",
     },
     category_parentId: {
-      type: Number,
-      default: 0,
+      type: [Number],
+      default: [],
     },
-    children: [this],
-    has_children: {
-      type: Boolean,
-      default: false,
+    category_status: {
+      type: String,
+      enum: ["pending", "active", "inactive"],
     },
   },
   {
@@ -42,6 +41,8 @@ var categorySchema = new Schema(
 );
 
 categorySchema.index({ category_name: "text" });
+categorySchema.index({ category_id: "text" });
+categorySchema.index({ category_parentId: "text" });
 
 categorySchema.pre("save", function (next) {
   this.slug = slugify(this.category_name, { lower: true });

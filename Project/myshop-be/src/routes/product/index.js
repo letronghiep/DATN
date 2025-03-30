@@ -21,6 +21,8 @@ const {
   addProductToWishList,
   getCountFavorite,
   increaseViewProduct,
+  getArrivalsProduct,
+  getHomePage,
 } = require("../../controllers/product.controller");
 const { authentication } = require("../../middlewares/authentication");
 const { grantAccess } = require("../../middlewares/rbac.middleware");
@@ -28,6 +30,8 @@ const router = express.Router();
 // user
 
 router.get("", asyncHandler(getAllProduct));
+router.get("/homepage", asyncHandler(getHomePage));
+router.get("/arrivals", asyncHandler(getArrivalsProduct));
 router.get("/search", asyncHandler(searchProduct));
 router.get("/seller", authentication, asyncHandler(getListProductByShop));
 router.get("/:product_id", asyncHandler(getProductById));
@@ -58,10 +62,7 @@ router.patch(
   authentication,
   asyncHandler(addProductToWishList)
 );
-router.patch(
-  "/view/:product_id",
-  asyncHandler(increaseViewProduct)
-);
+router.patch("/view/:product_id", asyncHandler(increaseViewProduct));
 router.post(
   "/seller/block/:product_id",
   grantAccess("updateOwn", "product"),

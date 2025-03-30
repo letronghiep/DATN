@@ -35,7 +35,8 @@ async function findAllProduct({ limit, sort, page, filter, select }) {
     .select(getSelectData(select))
     .lean();
 }
-const checkProductByServer = async (products) => {
+const checkProductByServer = async ({ products }) => {
+  console.log({ products });
   return await Promise.all(
     products.map(async (product) => {
       const foundProduct = await getProductById({

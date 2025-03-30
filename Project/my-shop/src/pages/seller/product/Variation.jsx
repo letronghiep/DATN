@@ -1,4 +1,8 @@
-import { CloseOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  CloseOutlined,
+  LoadingOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { Button, Flex, message, Radio, Select, Table, Upload } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -244,107 +248,113 @@ const Variation = ({ variations, control, setValue, watch }) => {
               className="p-4 mb-4 border rounded-md relative bg-gray-100"
             >
               <table className="w-full">
-                <tr className="mb-2 flex gap-x-4">
-                  <td
-                    colSpan={2}
-                    className="flex justify-end flex-1 items-center"
-                  >
-                    <p className="font-medium flex-1 justify-end flex">
-                      Phân loại {index + 1}:
-                    </p>
-                  </td>
-                  <td className="flex gap-x-4 flex-[6]">
-                    <Select
-                      placeholder="Type or Select"
-                      onChange={(id) => handleChangeVariant(id, index)}
-                      style={{ width: "90%" }}
-                    >
-                      {variations.map((variation) => (
-                        <Option
-                          key={variation.variation_id}
-                          value={variation.variation_id}
-                          disabled={selectedVariation.find(
-                            (v) =>
-                              v.variation_id.toString() ===
-                              variation.variation_id.toString()
-                          )}
-                        >
-                          {variation.display_name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </td>
-                </tr>
-                {variant.variation_id && (
-                  <tr className="flex gap-2 items-center">
+                <tbody>
+                  <tr className="mb-2 flex gap-x-4">
                     <td
                       colSpan={2}
-                      className={`flex justify-end flex-1 ${
-                        variant.group_list.length > 1
-                          ? "items-baseline"
-                          : "items-center"
-                      }`}
+                      className="flex justify-end flex-1 items-center"
                     >
                       <p className="font-medium flex-1 justify-end flex">
-                        Tùy chọn:
+                        Phân loại {index + 1}:
                       </p>
                     </td>
-                    <td className="flex flex-col gap-x-4 flex-[6]">
-                      {variant.group_list.length > 1 && (
-                        <Radio.Group
-                          onChange={(value) => handleChangeGroup(value, index)}
-                        >
-                          {variant.group_list.map((option) => (
-                            <Radio
-                              key={option.group_id}
-                              value={option.group_id}
-                            >
-                              {option.group_name}
-                            </Radio>
-                          ))}
-                        </Radio.Group>
-                      )}
-                      {/* <Controller
+                    <td className="flex gap-x-4 flex-[6]">
+                      <Select
+                        placeholder="Type or Select"
+                        onChange={(id) => handleChangeVariant(id, index)}
+                        style={{ width: "90%" }}
+                      >
+                        {variations.map((variation) => (
+                          <Option
+                            key={variation.variation_id}
+                            value={variation.variation_id}
+                            disabled={selectedVariation.find(
+                              (v) =>
+                                v.variation_id.toString() ===
+                                variation.variation_id.toString()
+                            )}
+                          >
+                            {variation.display_name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </td>
+                  </tr>
+                  {variant.variation_id && (
+                    <tr className="flex gap-2 items-center">
+                      <td
+                        colSpan={2}
+                        className={`flex justify-end flex-1 ${
+                          variant.group_list.length > 1
+                            ? "items-baseline"
+                            : "items-center"
+                        }`}
+                      >
+                        <p className="font-medium flex-1 justify-end flex">
+                          Tùy chọn:
+                        </p>
+                      </td>
+                      <td className="flex flex-col gap-x-4 flex-[6]">
+                        {variant.group_list.length > 1 && (
+                          <Radio.Group
+                            onChange={(value) =>
+                              handleChangeGroup(value, index)
+                            }
+                          >
+                            {variant.group_list.map((option) => (
+                              <Radio
+                                key={option.group_id}
+                                value={option.group_id}
+                              >
+                                {option.group_name}
+                              </Radio>
+                            ))}
+                          </Radio.Group>
+                        )}
+                        {/* <Controller
                         name={`product_variations.${index}.${variant.display_name}`}
                         control={control}
                         render={({ field, fieldState: { error } }) => (
                           <> */}
-                      <Select
-                        mode="tags"
-                        placeholder="e.g. Red, etc"
-                        style={{ width: "90%" }}
-                        className="ml-1.5"
-                        onChange={(value) =>
-                          handleChangeVariantValue(
-                            value,
-                            variant.variation_id,
-                            index
-                          )
-                        }
-                      >
-                        {variant.group_list.length > 1
-                          ? variant.group_list
-                              .find((group) => group.group_id == groupId)
-                              ?.value_list.map((option) => (
-                                <Option
-                                  key={option.value_id}
-                                  value={option.value_id}
-                                >
-                                  {option.value_name}
-                                </Option>
-                              ))
-                          : variant.group_list[0]?.value_list.map((option) => (
-                              <Option
-                                key={option.value_id}
-                                value={option.value_id}
-                              >
-                                {option.value_name}
-                              </Option>
-                            ))}
-                      </Select>
-                    </td>
-                  </tr>
-                )}
+                        <Select
+                          mode="tags"
+                          placeholder="e.g. Red, etc"
+                          style={{ width: "90%" }}
+                          className="ml-1.5"
+                          onChange={(value) =>
+                            handleChangeVariantValue(
+                              value,
+                              variant.variation_id,
+                              index
+                            )
+                          }
+                        >
+                          {variant.group_list.length > 1
+                            ? variant.group_list
+                                .find((group) => group.group_id == groupId)
+                                ?.value_list.map((option) => (
+                                  <Option
+                                    key={option.value_id}
+                                    value={option.value_id}
+                                  >
+                                    {option.value_name}
+                                  </Option>
+                                ))
+                            : variant.group_list[0]?.value_list.map(
+                                (option) => (
+                                  <Option
+                                    key={option.value_id}
+                                    value={option.value_id}
+                                  >
+                                    {option.value_name}
+                                  </Option>
+                                )
+                              )}
+                        </Select>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
               </table>
               <Button
                 type="text"

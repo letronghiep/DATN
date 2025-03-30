@@ -1,7 +1,7 @@
 import { notification } from "antd";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
 import { loginAuth } from "../stores/slices/authSlice";
 
@@ -9,20 +9,32 @@ function LoginPage() {
   const { isAuthenticated, loading } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
+  console.log(location);
+  const redirectTo = new URLSearchParams(location.search).get("redirectTo");
   const onSubmit = async (data) => {
     try {
       const res = await dispatch(loginAuth(data)).unwrap();
       const { user } = res;
       if (user) {
-        const permission = user.usr_role.rol_name;
-        // router.replace(decodeURIComponent(redirectTo));
-        if (permission === "shop") {
-          navigate("/seller");
-        } else if (permission === "admin") {
-          navigate("/dashboard");
+        const navigateTo = location.search;
+        if (navigateTo) {
+          console.log(redirectTo);
+          // const redirectTo = decodeURIComponent(navigateTo.split("=")[1]);
+          navigate(redirectTo, { replace: true });
         } else {
           navigate("/");
         }
+
+        // const permission = user.usr_role.rol_name;
+        // // router.replace(decodeURIComponent(redirectTo));
+        // if (permission === "shop") {
+        //   navigate("/seller");
+        // } else if (permission === "admin") {
+        //   navigate("/dashboard");
+        // } else {
+        //   navigate("/");
+        // }
       }
     } catch (error) {
       notification.error({

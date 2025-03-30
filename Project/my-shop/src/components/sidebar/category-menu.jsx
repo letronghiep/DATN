@@ -1,7 +1,7 @@
 import { Loading3QuartersOutlined } from "@ant-design/icons";
 import { Layout, theme } from "antd";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getCategoryByParentId } from "../../services/category";
 
 const CategoryMenu = () => {
@@ -9,7 +9,6 @@ const CategoryMenu = () => {
   const {
     token: { colorBgContainer, colorText },
   } = theme.useToken();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const { category_id } = useParams();
   const [filteredCategories, setFilteredCategories] = useState(categories);

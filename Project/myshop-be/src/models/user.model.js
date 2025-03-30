@@ -23,6 +23,22 @@ var userSchema = new Schema(
       type: String,
       default: "",
     },
+    usr_address: {
+      type: String,
+      default: "",
+    },
+    usr_city: {
+      type: String,
+      default: "",
+    },
+    usr_district: {
+      type: String,
+      default: "",
+    },
+    usr_ward: {
+      type: String,
+      default: "",
+    },
     usr_password: {
       type: String,
       default: "",

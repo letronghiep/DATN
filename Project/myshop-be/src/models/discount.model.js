@@ -79,6 +79,11 @@ var discountSchema = new Schema(
       type: Array,
       default: [],
     },
+    discount_status: {
+      type: String,
+      default: "pending",
+      enum: ["pending", "active", "block", "expired"],
+    },
   },
 
   {

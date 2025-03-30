@@ -16,7 +16,10 @@ const checkoutReview = async (req, res, next) => {
     message: "checkout review",
     metadata: await checkoutReviewService({
       userId: req.user.userId,
-      ...req.body,
+      cartId: req.body.cartId,
+      shop_order_ids: req.body.shop_order_ids,
+      discount_code: req.body.discount_code,
+      // cart_products: req.body.cart_products,
     }),
   }).send(res);
 };

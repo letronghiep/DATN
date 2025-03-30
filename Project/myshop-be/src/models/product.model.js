@@ -94,7 +94,12 @@ var productSchema = new Schema(
 );
 
 productSchema.index({ product_name: "text", product_description: "text" });
+// productSchema.index({ product_attributes: 1 });
+productSchema.index({ "product_attributes.id": 1 });
+productSchema.index({ "product_attributes.value": 1 });
 
+productSchema.index({ product_category: 1 });
+productSchema.index({ product_price: 1 });
 productSchema.pre("save", function (next) {
   this.product_slug = slugify(this.product_name, { lower: true });
 

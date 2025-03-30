@@ -16,6 +16,7 @@ const grantAccess = (action, resource) => {
       const user = await User.findById(userId).populate("usr_role").lean();
       const rol_name = user.usr_role.rol_name;
       const permission = rbac.can(rol_name)[action](resource);
+      console.log({ ...permission, action, rol_name, resource, userId });
       if (!permission.granted)
         throw new AuthFailureError("Bạn không có quyền truy cập hệ thống");
       next();

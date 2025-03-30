@@ -17,24 +17,28 @@ import {
 import { Header } from "antd/es/layout/layout";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { handleLogout } from "../../services/auth/logout";
-import { logoutAuth } from "../../stores/slices/authSlice";
+import { logout } from "../../stores/slices/authSlice";
 
-function HomeHeader({ user }) {
+function HomeHeader({ user, onOpenCart }) {
   const { Search } = Input;
   const dispatch = useDispatch();
+
   const logoutUser = async () => {
     try {
-      await handleLogout();
-      await dispatch(logoutAuth()).unwrap();
-      notification.success({
-        message: "Logged out successfully",
-        showProgress: true,
-        placement: "top",
-        onClose: () => {
-          window.location.reload();
-        },
-      });
+      // await dispatch(logoutAuth()).unwrap();
+      const data = await dispatch(logout()).unwrap();
+      console.log({ data });
+      // const res = await handleLogout();
+      if (data) {
+        notification.success({
+          message: "Logged out successfully",
+          showProgress: true,
+          placement: "top",
+          onClose: () => {
+            window.location.reload();
+          },
+        });
+      }
     } catch (error) {
       notification.error({
         message: error,
@@ -106,8 +110,8 @@ function HomeHeader({ user }) {
         align="center"
         justify="space-between"
         style={{
-          maxWidth: "1200px",
-          minWidth: "1200px",
+          maxWidth: "1440px",
+          minWidth: "1440px",
           margin: "auto",
           width: "100%",
           padding: "0px 24px",
@@ -129,10 +133,18 @@ function HomeHeader({ user }) {
         />
         <Flex className="flex items-center gap-x-4">
           <div onClick={onNavigateFavoritePage}>
-            <HeartOutlined />
+            <HeartOutlined
+              style={{
+                fontSize: 20,
+              }}
+            />
           </div>
-          <div>
-            <ShoppingCartOutlined />
+          <div onClick={onOpenCart}>
+            <ShoppingCartOutlined
+              style={{
+                fontSize: 20,
+              }}
+            />
           </div>
           <div>
             {user ? (

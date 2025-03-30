@@ -10,8 +10,7 @@ import { Header } from "antd/es/layout/layout";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import useResponsive from "~/hooks/useResponsive";
-import { logoutAuth } from "../../stores/slices/authSlice";
-import { handleLogout } from "../../services/auth/logout";
+import { logout } from "../../stores/slices/authSlice";
 
 function ShopHeader({ bgColor = "#FFFFFF", user }) {
   const dispatch = useDispatch();
@@ -20,16 +19,27 @@ function ShopHeader({ bgColor = "#FFFFFF", user }) {
   const navigate = useNavigate();
   const logoutUser = async () => {
     try {
-      await handleLogout();
-      await dispatch(logoutAuth()).unwrap();
-      notification.success({
-        message: "Logged out successfully",
-        showProgress: true,
-        placement: "top",
-        onClose: () => {
-          navigate("/login");
-        },
-      });
+      // await handleLogout();
+      // await dispatch(logoutAuth()).unwrap();
+      // notification.success({
+      //   message: "Logged out successfully",
+      //   showProgress: true,
+      //   placement: "top",
+      //   onClose: () => {
+      //     navigate("/login");
+      //   },
+      // });
+      const data = await dispatch(logout()).unwrap();
+      if (data) {
+        notification.success({
+          message: "Logged out successfully",
+          showProgress: true,
+          placement: "top",
+          onClose: () => {
+            window.location.reload();
+          },
+        });
+      }
     } catch (error) {
       notification.error({
         message: error,

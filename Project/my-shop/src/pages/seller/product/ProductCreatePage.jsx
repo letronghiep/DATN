@@ -5,7 +5,7 @@ import { notification } from "antd";
 
 function ProductCreatePage() {
   const onSubmit = async (data) => {
-    console.log(data);
+    console.log({data});
     const submitData = {
       ...data,
       product_price: parseFloat(
@@ -20,48 +20,30 @@ function ProductCreatePage() {
           : data.product_quantity
       ),
     };
-    console.log(submitData);
-    const res = await createProduct(submitData);
-    if (res.status === 201) {
-      notification.success({
-        message: "Tạo sản phẩm thành công",
-        showProgress: true,
-        placement: "top",
-        // onClose: () => {
-        //   navigate("/login");
-        // },
-      });
-    } else {
-      notification.error({
-        message: "Something went wrong",
-        showProgress: true,
-        placement: "top",
-      });
-    }
+    console.log({submitData});
+    // const res = await createProduct(submitData);
+    // if (res.status === 201) {
+    //   notification.success({
+    //     message: "Tạo sản phẩm thành công",
+    //     showProgress: true,
+    //     placement: "top",
+    //     // onClose: () => {
+    //     //   navigate("/login");
+    //     // },
+    //   });
+    // } else {
+    //   notification.error({
+    //     message: "Something went wrong",
+    //     showProgress: true,
+    //     placement: "top",
+    //   });
+    // }
   };
 
   return (
     <div className="w-[90%] relative">
       <ProductForm
         onSubmit={onSubmit}
-        // fileList={fileList}
-        // images={images}
-        // previewImage={previewImage}
-        // previewOpen={previewOpen}
-        // setPreviewImage={setPreviewImage}
-        // setPreviewOpen={setPreviewOpen}
-        // handlePreview={handlePreview}
-        // handleChange={handleChange}
-        // uploadButton={uploadButton}
-        // control={control}
-        // watch={watch}
-        // options={options}
-        // handleChangeCategory={handleChangeCategory}
-        // selectedCategory={selectedCategory}
-        // brands={brands}
-        // attributes={attributes}
-        // variations={variations}
-        // setValue={setValue}
       />
       {/* <FooterView
         actionLabel="Lưu và hiển thị"

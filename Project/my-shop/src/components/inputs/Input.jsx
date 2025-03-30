@@ -1,7 +1,14 @@
-import { Input } from "antd"
-import { Controller } from "react-hook-form"
+import { Input } from "antd";
+import { Controller } from "react-hook-form";
 
-function InputCustom({control, name, label, type}) {
+function InputCustom({
+  control,
+  name,
+  label,
+  type,
+  addonBefore = null,
+  addonAfter = null,
+}) {
   return (
     <Controller
       control={control}
@@ -11,7 +18,13 @@ function InputCustom({control, name, label, type}) {
           {type === "password" ? (
             <Input.Password {...field} placeholder={label} />
           ) : (
-            <Input placeholder={label} {...field} />
+            <Input
+              addonBefore={addonBefore}
+              addonAfter={addonAfter}
+              placeholder={label}
+              defaultValue={field.defaultValue}
+              {...field}
+            />
           )}
           {fieldState.error && (
             <span style={{ color: "red", display: "block" }}>
@@ -21,7 +34,7 @@ function InputCustom({control, name, label, type}) {
         </>
       )}
     ></Controller>
-  )
+  );
 }
 
-export default InputCustom
+export default InputCustom;

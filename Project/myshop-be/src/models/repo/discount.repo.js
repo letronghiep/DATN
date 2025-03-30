@@ -38,6 +38,7 @@ async function findAllDiscountUnSelect({
     .lean();
 }
 const checkDiscountExists = async ({ filter }) => {
+  console.log({ filter });
   return await Discount.findOne(filter).lean();
 };
 module.exports = {

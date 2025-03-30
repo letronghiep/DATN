@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
 
 const initialState = {
   variants: [],
@@ -14,7 +15,7 @@ const variationSlice = createSlice({
   initialState,
   reducers: {
     addVariation: (state) => {
-      const newVariation = { id: Date.now(), display_name: "", variation_id: "", group_list: [] };
+      const newVariation = { id: uuidv4(), display_name: "", variation_id: "", group_list: [] };
       state.variants.push(newVariation);
       state.headers.push(newVariation.display_name);
     },

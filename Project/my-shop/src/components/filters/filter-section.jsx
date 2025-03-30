@@ -1,26 +1,35 @@
-import React from "react";
+import { DownOutlined, UpOutlined } from "@ant-design/icons";
+import { useState } from "react";
 
 function FilterSection({ title, filterQueries, setFilterValue }) {
-  console.log(filterQueries);
-  const handleFilterValue = (event) => {
-    const filterValue = event.target.value;
-    setFilterValue((prevValue) => [...prevValue, filterValue]);
-  };
+  // const handleFilterValue = (event) => {
+  //   const filterValue = event.target.value;
+  //   setFilterValue((prevValue) => [...prevValue, filterValue]);
+  // };
+  const [open, setOpen] = useState(true);
   return (
     <div className="w-full">
-      <p className="font-semibold">{title}</p>
-      <div className="mt-2 flex flex-col gap-y-1">
-        {filterQueries.map((filter, index) => (
-          <label key={index}>
-            <input
-              type="checkbox"
-              value={filter.id}
-              onChange={(value) => handleFilterValue}
-            />{" "}
-            {filter.label}
-          </label>
-        ))}
+      <div
+        className="flex items-center justify-between px-2 py-2 cursor-pointer"
+        onClick={() => setOpen(!open)}
+      >
+        <p className="font-semibold">{title}</p>
+        {open ? <UpOutlined /> : <DownOutlined />}
       </div>
+      {open && (
+        <div className="mt-2 ml-3 flex flex-col gap-y-1">
+          {filterQueries.map((filter, index) => (
+            <label key={index}>
+              <input
+                type="checkbox"
+                value={filter.id}
+                onChange={(value) => setFilterValue(value.target.value)}
+              />{" "}
+              {filter.label}
+            </label>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

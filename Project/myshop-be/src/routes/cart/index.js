@@ -14,7 +14,6 @@ router.use(authentication);
 router.post("", asyncHandler(addToCart));
 router.patch(
   "/update",
-  grantAccess("updateOwn", "cart"),
   asyncHandler(updateCart)
 );
 router.get("", asyncHandler(getListUserCart));

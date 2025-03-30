@@ -7,6 +7,7 @@ const {
   updateUserService,
   updateUserToShopService,
   getMeService,
+  deleteUserService,
 } = require("../services/user.service");
 const createUser = async (req, res, next) => {
   new CREATED({
@@ -17,7 +18,9 @@ const createUser = async (req, res, next) => {
 const listUser = async (req, res, next) => {
   new SuccessResponse({
     message: "List User",
-    metadata: await getListUserService(req.query),
+    metadata: await getListUserService({
+      query: req.query,
+    }),
   }).send(res);
 };
 const detailUser = async (req, res, next) => {
@@ -47,7 +50,15 @@ const getMe = async (req, res, next) => {
     message: "User Detail",
     metadata: await getMeService({
       userId: req.user.userId,
-      keyStore: req.keyStore
+      keyStore: req.keyStore,
+    }),
+  }).send(res);
+};
+const deleteUser = async (req, res, next) => {
+  new SuccessResponse({
+    message: "Delete User",
+    metadata: await deleteUserService({
+      user_id: req.params.user_id,
     }),
   }).send(res);
 };
@@ -58,4 +69,5 @@ module.exports = {
   updateUser,
   createShop,
   getMe,
+  deleteUser,
 };

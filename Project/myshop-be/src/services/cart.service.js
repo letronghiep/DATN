@@ -2,6 +2,7 @@
 const Cart = require("../models/cart.model");
 const { getProductById } = require("../models/repo/product.repo");
 const { NotFoundError } = require("../core/error.response");
+const { Types } = require("mongoose");
 
 // REPO
 const createUserCart = async ({ userId, product }) => {
@@ -55,20 +56,32 @@ const updateUserCartQuantity = async ({ userId, product }) => {
 // END REPO
 
 const addToCartService = async ({ userId, product }) => {
-  const userCart = await Cart.findOne({
-    cart_userId: userId,
-  }).lean();
-  // chua co cart
-  if (!userCart) {
-    return await createUserCart({ userId, product });
+  try {
+    // Tìm giỏ hàng của user
+    const userCart = await Cart.findOne({
+      cart_userId: new Types.ObjectId(userId),
+    }).lean();
+
+    // Nếu chưa có giỏ hàng hoặc giỏ hàng trống, tạo mới
+    if (!userCart || !userCart.cart_products.length) {
+      return await createUserCart({ userId, product });
+    }
+
+    // Kiểm tra sản phẩm đã tồn tại trong giỏ hàng chưa
+    const existingProduct = userCart.cart_products.find(
+      (p) => p.productId.toString() === product.productId.toString()
+    );
+
+    if (existingProduct) {
+      // Nếu sản phẩm đã tồn tại, cập nhật số lượng
+      return await updateUserCartQuantity({ userId, product });
+    } else {
+      // Nếu sản phẩm chưa tồn tại, thêm mới vào giỏ hàng
+      return await createUserCart({ userId, product });
+    }
+  } catch (error) {
+    throw new Error("Lỗi khi thêm sản phẩm vào giỏ hàng: " + error.message);
   }
-  // co gio hang nhung chua co san pham
-  if (!userCart.cart_products.length) {
-    userCart.cart_products = [product];
-    return await userCart.save();
-  }
-  // gio hang ton tai va co san pham thi update quantity\
-  return await updateUserCartQuantity({ userId, product });
 };
 
 /* 
@@ -88,6 +101,7 @@ const addToCartService = async ({ userId, product }) => {
     ]
   */
 const updateCartService = async ({ userId, shop_order_ids }) => {
+  console.log(shop_order_ids);
   const { productId, quantity, old_quantity } =
     shop_order_ids[0]?.item_products[0];
   // check product
@@ -111,7 +125,7 @@ const updateCartService = async ({ userId, shop_order_ids }) => {
 const deleteUserCartService = async ({ userId, productId }) => {
   const deleted = await Cart.updateOne(
     {
-      cart_userId: userId,
+      cart_userId: new Types.ObjectId(userId),
       cart_state: "active",
     },
     {
@@ -125,7 +139,7 @@ const deleteUserCartService = async ({ userId, productId }) => {
 
 const getListUserCartService = async ({ userId }) => {
   return await Cart.findOne({
-    cart_userId: userId,
+    cart_userId: new Types.ObjectId(userId),
   }).lean();
 };
 

@@ -10,6 +10,9 @@ const { deleteUserCartService } = require("./cart.service");
 const { producer } = require("./rabbitMQ.service");
 const { getOrderByUserList } = require("../models/repo/checkout.repo");
 const { randomString } = require("../utils");
+const cartModel = require("../models/cart.model");
+const { Types } = require("mongoose");
+const { getDiscountAmountService } = require("./discount.service");
 /* 
     {
         cartId,
@@ -52,8 +55,12 @@ const checkoutReviewService = async ({
   cartId,
   userId,
   shop_order_ids = [],
+  discount_code = "",
 }) => {
-  const foundCart = await findCartById({ cartId });
+  const foundCart = await cartModel.findOne({
+    _id: new Types.ObjectId(cartId),
+    cart_state: "active",
+  });
   if (!foundCart) throw new BadRequestError("Cart not exists");
   if (!foundCart.cart_products.length) {
     throw new BadRequestError("Cart is empty");
@@ -66,50 +73,66 @@ const checkoutReviewService = async ({
   };
   const shop_order_ids_new = [];
   // tinh tong tien bill
-  for (let i = 0; i < shop_order_ids.length; i++) {
-    const {
-      shopId,
-      shop_discounts = [],
-      item_products = [],
-    } = shop_order_ids[i];
-    // check product server
-    const checkProductServer = await checkProductByServer(item_products);
-    if (!checkProductServer[0]) throw new BadRequestError("order wrong!!!");
-    // tong tien don hang
-    const checkoutPrice = checkProductServer.reduce((acc, product) => {
-      return acc + product.quantity * product.price;
-    }, 0);
-    // tong tien truoc xu li
-    checkout_order.totalPrice = +checkoutPrice;
-    const itemCheckout = {
-      shopId,
-      shop_discounts,
-      priceRaw: checkoutPrice,
-      priceApplyDiscount: checkoutPrice,
-      item_products: checkProductServer,
-    };
-    if (shop_discounts.length > 0) {
-      const { totalPrice = 0, discount = 0 } = await getDiscountAmount({
-        codeId: shop_discounts[0].codeId,
-        userId: userId,
-        shopId,
-        products: checkProductServer,
-      });
-      // tong discount giam gia
-      checkout_order.totalDiscount += discount;
-      if (discount > 0) {
-        itemCheckout.priceApplyDiscount = checkoutPrice - discount;
-        // tong thanh toan cuoi cung
-        checkout_order.totalCheckout += itemCheckout.priceApplyDiscount;
-      }
+  // for (let i = 0; i < shop_order_ids.length; i++) {
+  // const {
+  //   shopId,
+  //   shop_discounts = [],
+  //   item_products = [],
+  // } = shop_order_ids[i];
+  // check product server
+  const checkProductServer = await checkProductByServer({
+    products: shop_order_ids,
+  });
+  console.log({ checkProductServer });
+  if (!checkProductServer[0]) throw new BadRequestError("order wrong!!!");
+  // tong tien don hang
+  const checkoutPrice = checkProductServer.reduce((acc, product) => {
+    return acc + product.quantity * product.price;
+  }, 0);
+  // tong tien truoc xu li
+  checkout_order.totalPrice = +checkoutPrice;
+  const itemCheckout = {
+    // shopId,
+    discount_code,
+    priceRaw: checkoutPrice,
+    priceApplyDiscount: checkoutPrice,
+    item_products: checkProductServer,
+  };
+  // if (shop_discounts.length > 0) {
+  //   const { totalPrice = 0, discount = 0 } = await getDiscountAmount({
+  //     codeId: shop_discounts[0].codeId,
+  //     userId: userId,
+  //     shopId,
+  //     products: checkProductServer,
+  //   });
+  //   // tong discount giam gia
+  //   checkout_order.totalDiscount += discount;
+  //   if (discount > 0) {
+  //     itemCheckout.priceApplyDiscount = checkoutPrice - discount;
+  //     // tong thanh toan cuoi cung
+  //     checkout_order.totalCheckout += itemCheckout.priceApplyDiscount;
+  //   }
+  // }
+  if (discount_code) {
+    const { totalPrice = 0, discount = 0 } = await getDiscountAmountService({
+      codeId: discount_code,
+      userId: userId,
+      // shopId: shop_order_ids[0].shopId,`
+      products: checkProductServer,
+    });
+    checkout_order.totalDiscount += discount;
+    if (discount > 0) {
+      itemCheckout.priceApplyDiscount = checkoutPrice - discount;
+      checkout_order.totalCheckout += itemCheckout.priceApplyDiscount;
     }
-    shop_order_ids_new.push(itemCheckout);
-    return {
-      shop_order_ids,
-      shop_order_ids_new,
-      checkout_order,
-    };
   }
+  shop_order_ids_new.push(itemCheckout);
+  return {
+    shop_order_ids,
+    shop_order_ids_new,
+    checkout_order,
+  };
+  // }
 };
 // order
 const orderByUserService = async ({

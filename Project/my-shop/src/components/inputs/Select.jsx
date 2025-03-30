@@ -7,9 +7,10 @@ function SelectCustom({
   keyField,
   valueField,
   name,
-  placeholder,
+  placeholder = "",
   onChange,
-  className
+  multiple = false,
+  className,
 }) {
   return (
     <Controller
@@ -23,12 +24,13 @@ function SelectCustom({
               field.onChange(e);
               onChange?.(e);
             }}
+            mode={multiple ? "multiple" : "default"}
             placeholder={placeholder}
             style={{ width: "100%" }}
             className={className}
             value={field?.value}
           >
-            {data.map((item) => (
+            {data?.map((item) => (
               <Select.Option value={item[keyField]} key={item[keyField]}>
                 {item[valueField]}
               </Select.Option>

@@ -24,7 +24,6 @@ function SalePage() {
     start: new Date(),
     end: new Date(),
   });
-  const orderSlice = useSelector((state) => state.order);
   const [orderStatus, setOrderStatus] = useState({
     pending: 0,
     processing: 0,
@@ -91,7 +90,7 @@ function SalePage() {
           });
         }
         if (discounts) {
-          setDiscounts(discounts.metadata);
+          setDiscounts(discounts.metadata.data);
         }
         socket.on("read:notification", async () => {
           const data = await getNotification(user._id, false);

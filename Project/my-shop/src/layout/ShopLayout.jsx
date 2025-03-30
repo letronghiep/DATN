@@ -1,32 +1,28 @@
 import { Layout, theme } from "antd";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { ShopHeader } from "~/components/header";
 import Sidebar from "~/components/seller/Sidebar";
 import SpinLoading from "../components/loading/SpinLoading";
-import { getAuth } from "../stores/slices/authSlice";
-import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "../core/axiosInstance";
 import { apiOrigin } from "../constants";
+import { axiosInstance } from "../core/axiosInstance";
+import withRoleCheck from "../hoc/WithRoleCheck";
+import { getAuth } from "../stores/slices/authSlice";
 
 function ShopLayout({ children }) {
   const [user, setUser] = useState();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userStorage = useSelector((state) => state.user);
-
+  useEffect(() => {
+    document.title = "Dashboard";
+  }, []);
   const userId = userStorage._id;
   useEffect(() => {
     async function getRefreshToken() {
       try {
-        const response = await axiosInstance.get(
-          `${apiOrigin}/auth/refresh-token`
-        );
-        // if (response.status !== 200) {
-        //   localStorage.removeItem("token");
-        //   localStorage.removeItem("client_id");
-        //   window.location.href = "/login";
-        // }
+        await axiosInstance.get(`${apiOrigin}/auth/refresh-token`);
       } catch (error) {
         localStorage.removeItem("token");
         localStorage.removeItem("client_id");
@@ -46,12 +42,6 @@ function ShopLayout({ children }) {
           setUser(data.user);
         }
       }
-      // else if (!token && !client_id) {
-      //   const path = window.location.pathname;
-      //   if (!["/login", "/register"].includes(path)) {
-      //     navigate("/login", { replace: true });
-      //   }
-      // }
     }
     getUserData();
   }, [dispatch, navigate, userId]);
@@ -94,4 +84,4 @@ function ShopLayout({ children }) {
   );
 }
 
-export default ShopLayout;
+export default withRoleCheck(ShopLayout, ["shop"]);

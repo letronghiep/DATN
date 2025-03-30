@@ -9,6 +9,8 @@ const {
   getAllDiscountCodeByShopService,
   cancelDiscountCodeService,
   deleteDiscountCodeService,
+  getDiscountDetailService,
+  updateDiscountService,
 } = require("../services/discount.service");
 
 const createDiscount = async (req, res, next) => {
@@ -32,10 +34,13 @@ const getAllDiscountCodes = async (req, res, next) => {
 };
 
 const getDiscountAmount = async (req, res, next) => {
+  console.log({  res });
   new SuccessResponse({
     message: "discount amount",
     metadata: await getDiscountAmountService({
-      ...req.body,
+      codeId: req.body.codeId,
+      userId: req.user.userId,
+      products: req.body.products,
     }),
   }).send(res);
 };
@@ -61,12 +66,28 @@ const deleteDiscountCode = async (req, res, next) => {
   new SuccessResponse({
     message: "Discount code is deleted",
     metadata: await deleteDiscountCodeService({
-      discount_shopId: req.user.userId,
-      ...req.query,
+      shopId: req.user.userId,
+      codeId: req.params.codeId,
     }),
   }).send(res);
 };
-
+const getDiscountDetail = async (req, res, next) => {
+  new SuccessResponse({
+    message: "discount detail",
+    metadata: await getDiscountDetailService({
+      discount_id: req.params.discount_id,
+    }),
+  }).send(res);
+};
+const updateDiscount = async (req, res, next) => {
+  new SuccessResponse({
+    message: "discount updated",
+    metadata: await updateDiscountService({
+      voucher_id: req.params.discount_id,
+      data: req.body,
+    }),
+  }).send(res);
+};
 module.exports = {
   createDiscount,
   getAllDiscountCodes,
@@ -74,4 +95,6 @@ module.exports = {
   getAllDiscountCodeWithProducts,
   cancelDiscountCode,
   deleteDiscountCode,
+  getDiscountDetail,
+  updateDiscount,
 };

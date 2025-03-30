@@ -18,7 +18,10 @@ export const checkMaxSizeFile = (file) => {
   }
 };
 export const validateFormMoney = (money) => {
-  return money.toLocaleString("vi-VN");
+  return money.toLocaleString({
+    style: "currency",
+    currency: "VND",
+  });
 };
 export function modifyImageDimensions(url, newHeight, newWidth) {
   return url.replace(/h_\d+,w_\d+/, `h_${newHeight},w_${newWidth}`);

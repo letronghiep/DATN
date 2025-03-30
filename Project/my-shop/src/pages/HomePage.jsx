@@ -1,7 +1,10 @@
 import { Carousel } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useGetHomepageQuery } from "../apis/productsApi";
+import BestSeller from "../components/best-seller";
 import CategorySlide from "../components/slider/category-slider";
+import ProductSlide from "../components/slider/product-slider";
 import { modifyImageDimensions } from "../helpers";
 import { getBanners } from "../services/banner";
 import { getCategoryByParentId } from "../services/category";
@@ -25,6 +28,7 @@ function HomePage() {
     }
     fetchData();
   }, []);
+  const { data: homepage } = useGetHomepageQuery();
   return (
     <div>
       {/* Banner */}
@@ -46,11 +50,20 @@ function HomePage() {
         </div>
       )}
       {/* End Banner */}
+      {/* New Arrivals */}
+      <ProductSlide
+        products={homepage?.metadata.arrivalProduct || []}
+        title="Sản phẩm mới nhất"
+      />
       {/* Category */}
-      <div>
-        <CategorySlide categories={categories} title="Danh mục sản phẩm" />
-      </div>
+      <CategorySlide categories={categories} title="Danh mục sản phẩm" />
       {/* End Category */}
+      {/* Best seller */}
+      <BestSeller
+        data={homepage?.metadata.bestSeller}
+        title="Bán chạy nhất trong tuần"
+      />
+
     </div>
   );
 }

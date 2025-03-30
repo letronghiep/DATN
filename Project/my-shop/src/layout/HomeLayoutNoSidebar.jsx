@@ -1,17 +1,21 @@
-import { Layout, theme } from "antd";
-import  { useEffect, useState } from "react";
+import { Drawer, Layout, theme } from "antd";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import HomeHeader from "../components/header/Header";
 import { getAuth } from "../stores/slices/authSlice";
+import Footer from "../components/Footer";
+import ShoppingCart from "../components/shopping-cart";
 
 function HomeLayoutNoSidebar({ children }) {
   const { Content } = Layout;
+  const [openCart, setOpenCart] = useState(false);
+  const onClose = () => {
+    setOpenCart(false);
+  };
   const {
     token: { borderRadiusLG },
   } = theme.useToken();
   const [user, setUser] = useState();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const userStorage = useSelector((state) => state.user);
   const userData = userStorage?.user;
@@ -52,11 +56,11 @@ function HomeLayoutNoSidebar({ children }) {
   }, [userData, dispatch]);
   return (
     <Layout>
-      <HomeHeader user={user} />
+      <HomeHeader user={user} onOpenCart={setOpenCart} />
       <Content
         style={{
-          maxWidth: "1200px",
-          minWidth: "1200px",
+          maxWidth: "1440px",
+          minWidth: "1440px",
           margin: "auto",
           width: "100%",
           padding: "0px 24px",
@@ -71,8 +75,18 @@ function HomeLayoutNoSidebar({ children }) {
           }}
         >
           {children}
+          <Drawer
+            // title="Giỏ hàng"
+            placement="right"
+            closable={false}
+            onClose={onClose}
+            open={openCart}
+          >
+            <ShoppingCart onClose={() => setOpenCart(false)}/>
+          </Drawer>
         </Layout>
       </Content>
+      <Footer />
     </Layout>
   );
 }

@@ -15,6 +15,8 @@ const {
   addToWishListService,
   getCountFavoriteService,
   increaseViewProductService,
+  getArrivalsProductService,
+  getHomePageService,
 } = require("../services/product.service");
 const {
   getRelatedProductsService,
@@ -258,7 +260,20 @@ const findOneSku = async (req, res, next) => {
     metadata: sku,
   }).send(res);
 };
-
+const getArrivalsProduct = async (req, res, next) => {
+  new SuccessResponse({
+    message: "List arrivals products",
+    metadata: await getArrivalsProductService({
+      limit: req.query.limit,
+    }),
+  }).send(res);
+};
+const getHomePage = async (req, res, next) => {
+  new SuccessResponse({
+    message: "Home page products",
+    metadata: await getHomePageService(),
+  }).send(res);
+};
 module.exports = {
   createProductByShop,
   updateProductByShop,
@@ -283,4 +298,6 @@ module.exports = {
   addProductToWishList,
   getCountFavorite,
   increaseViewProduct,
+  getArrivalsProduct,
+  getHomePage,
 };

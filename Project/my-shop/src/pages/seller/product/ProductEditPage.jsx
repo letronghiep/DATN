@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProductForm from "./ProductForm";
 import { getProductData } from "../../../services/product";
+import { useForm } from "react-hook-form";
 
 function ProductEditPage() {
   // console.log(params);
   const { productId } = useParams();
   const [product, setProduct] = useState();
   const [loading, setLoading] = useState(true);
-
+  const { handleSubmit } = useForm();
   const { Title } = Typography;
   useEffect(() => {
     async function fetchProduct() {
@@ -29,6 +30,7 @@ function ProductEditPage() {
     fetchProduct();
   }, [productId]);
   const onSubmit = async (data) => {
+    console.log("data");
     console.log(data);
     // const { sku_list } = data;
     // const filteredValue = variations?.flatMap((variation) =>
@@ -116,7 +118,7 @@ function ProductEditPage() {
   return (
     <div className="w-[90%] relative">
       <ProductForm
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         product={product}
         secondaryAction={() => {}}
         actionLabel="Cập nhật"

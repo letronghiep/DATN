@@ -8,6 +8,8 @@ const {
   findAllDiscountSelect,
   checkDiscountExists,
 } = require("../models/repo/discount.repo");
+const { Types } = require("mongoose");
+const { paginate } = require("../helpers/paginate");
 
 /**
  * generate discount code[admin, shop]
@@ -119,7 +121,6 @@ const getAllDiscountCodeService = async ({
       select: ["product_name"],
     });
   }
-  console.log(discount_applies_to);
   return products;
 };
 
@@ -127,9 +128,37 @@ const getAllDiscountCodeByShopService = async ({
   limit = 10,
   page = 1,
   shopId,
+  q,
 }) => {
-  const discounts = await findAllDiscountSelect({
+  const searchText = q
+    ? {
+        $or: [
+          { discount_code: { $regex: q, $options: "i" } },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $toString: "$discount_name" },
+                regex: q,
+                options: "i",
+              },
+            },
+          },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $toString: "$discount_max_uses" },
+                regex: q,
+                options: "i",
+              },
+            },
+          },
+        ],
+      }
+    : {};
+  const discounts = await paginate({
+    model: Discount,
     filter: {
+      ...searchText,
       discount_shopId: shopId,
       discount_is_active: true,
     },
@@ -142,13 +171,14 @@ const getAllDiscountCodeByShopService = async ({
 const getDiscountAmountService = async ({
   codeId,
   userId,
-  shopId,
+  // shopId,
   products,
 }) => {
+  console.log({ codeId });
   const foundDiscount = await checkDiscountExists({
     filter: {
       discount_code: codeId,
-      discount_shopId: shopId,
+      // discount_shopId: shopId,
     },
   });
   if (!foundDiscount) throw new NotFoundError("Discount is not exists");
@@ -168,10 +198,11 @@ const getDiscountAmountService = async ({
   if (
     new Date() < new Date(discount_start_date) ||
     new Date() > new Date(discount_end_date)
-  )
+  ) {
     throw new BadRequestError("Discount code has expired!");
+  }
   // check gia tri toi da
-  
+
   const totalOrder = products.reduce((acc, product) => {
     return acc + product.quantity * product.price;
   }, 0);
@@ -204,12 +235,18 @@ const getDiscountAmountService = async ({
 // delete discount code
 const deleteDiscountCodeService = async ({ codeId, shopId, userId }) => {
   const result = await Discount.findByIdAndDelete({
-    discount_code: codeId,
-    discount_shopId: shopId,
+    _id: new Types.ObjectId(codeId),
+    discount_shopId: new Types.ObjectId(shopId),
   });
   return result;
 };
-
+const getDiscountDetailService = async ({ discount_id }) => {
+  const result = await Discount.findById({
+    _id: new Types.ObjectId(discount_id),
+  });
+  if (!result) throw new NotFoundError("Mã không tồn tại");
+  return result;
+};
 // cancel discount
 const cancelDiscountCodeService = async ({ codeId, shopId, userId }) => {
   const foundDiscount = await checkDiscountExists({
@@ -230,7 +267,16 @@ const cancelDiscountCodeService = async ({ codeId, shopId, userId }) => {
   });
   return result;
 };
-
+const updateDiscountService = async ({ voucher_id, data }) => {
+  const foundDiscount = await Discount.findById({
+    _id: new Types.ObjectId(voucher_id),
+  });
+  if (!foundDiscount) throw new NotFoundError("Discount is not exists");
+  const result = await Discount.findByIdAndUpdate(voucher_id, data, {
+    new: true,
+  });
+  return result;
+};
 module.exports = {
   createDiscountService,
   getAllDiscountCodeService,
@@ -238,4 +284,6 @@ module.exports = {
   getDiscountAmountService,
   deleteDiscountCodeService,
   cancelDiscountCodeService,
+  getDiscountDetailService,
+  updateDiscountService,
 };

@@ -116,6 +116,7 @@ function LocationSelect({ setPosition, onApply }) {
     <div className="w-full gap-x-3 flex items-center">
       <SelectCustom
         name="province"
+        label="Tỉnh/Thành phố"
         control={control}
         data={provincesData}
         valueField="label"
@@ -125,6 +126,7 @@ function LocationSelect({ setPosition, onApply }) {
       />
       <SelectCustom
         name="district"
+        label="Quận/Huyện"
         control={control}
         data={districtsData}
         valueField="label"
@@ -134,6 +136,7 @@ function LocationSelect({ setPosition, onApply }) {
       />
       <SelectCustom
         name="ward"
+        label="Phường/Xã"
         control={control}
         data={wardsData}
         valueField="label"

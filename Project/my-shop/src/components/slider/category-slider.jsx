@@ -1,5 +1,5 @@
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { Card, Typography } from "antd";
+import { Button, Card, Typography } from "antd";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { modifyImageDimensions } from "../../helpers";
@@ -10,19 +10,20 @@ function CategorySlide({ categories, title }) {
   const scroll = (direction) => {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({
-        left: direction === "left" ? -278 : 278,
+        left: direction === "left" ? -360 : 360,
         behavior: "smooth",
       });
     }
   };
   return (
-    <div>
+    <div className="my-4">
       {categories.length > 0 && (
         <>
           <Typography.Title
             level={4}
             style={{
               textTransform: "uppercase",
+              textAlign: "center",
             }}
           >
             {title}
@@ -43,19 +44,32 @@ function CategorySlide({ categories, title }) {
                   <Card
                     hoverable
                     key={category._id}
-                    className="relative text-center border shadow-md min-w-[200px] cursor-pointer"
-                    onClick={() => navigate(`/category/${category.category_id}`)}
+                    className="relative text-center border shadow-md cursor-pointer w-[360px] max-w-[360px] min-w-[360px] group"
+                    onClick={() =>
+                      navigate(`/category/${category.category_id}`)
+                    }
                   >
                     <img
                       src={modifyImageDimensions(
                         category.category_thumb,
-                        80,
-                        80
+                        495,
+                        360
                       )}
-                      className="w-full h-[80px] object-cover"
+                      className="object-cover"
                       alt="category"
                     />
-                    <p>{category.category_name}</p>
+                    <div className="rounded-md absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-full">
+                      <div className="flex flex-col space-y-4">
+                        <p className="text-white font-bold text-center text-2xl">
+                          {category.category_name}
+                        </p>
+                        <Button >
+                          <p className="text-black text-center text-base">
+                            Xem ngay
+                          </p>
+                        </Button>
+                      </div>
+                    </div>
                   </Card>
                 ))}
               </div>

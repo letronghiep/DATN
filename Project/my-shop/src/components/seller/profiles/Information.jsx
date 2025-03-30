@@ -2,11 +2,13 @@ import { Col, Flex, notification, Row, Typography } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import Button from "~/components/Button";
 import RadioCustom from "~/components/inputs/Radio";
 import { checkMaxSizeFile } from "~/helpers";
 import useResponsive from "~/hooks/useResponsive";
 import { updateUserInfo, uploadUserAvatar } from "~/services/user";
+import { useCreateUserMutation } from "../../../apis/usersApi";
 import Avatar from "../../Avatar";
 import DateSelect from "../../inputs/DateSelect";
 import Input from "../../inputs/Input";
@@ -21,7 +23,9 @@ export default function Information({ userId }) {
   } = useForm({
     criteriaMode: "all",
   });
-  const { user } = useSelector((state) => state.user.user);
+  const { user } = useSelector((state) => state.user);
+  const [createUser, { isLoading }] = useCreateUserMutation();
+  const location = useLocation();
   const [dataUser, setDataUser] = useState(null);
   const [tmpAvatar, setTmpAvatar] = useState("");
   const [loadingAvatar, setLoadingAvatar] = useState(false);
@@ -35,13 +39,15 @@ export default function Information({ userId }) {
     setValue("userFullName", dataUser?.usr_full_name ?? "");
     setValue("userSex", dataUser?.usr_sex ?? "");
     setValue("userPhone", dataUser?.usr_phone ?? "");
+    setValue("password", dataUser.password);
     setValue("userDateOfBirth", dataUser?.usr_date_of_birth ?? new Date());
     setValue("userAvatar", dataUser?.usr_avatar ?? tmpAvatar);
     setValue("userEmail", dataUser?.usr_email ?? "");
   }, [dataUser, setValue, tmpAvatar]);
   useEffect(() => {
-    if (dataUser) setValueOfFormData();
-  }, [dataUser, setValueOfFormData]);
+    if (dataUser && location.pathname !== "/seller/users/create")
+      setValueOfFormData();
+  }, [dataUser, setValueOfFormData, location]);
   const handleDateChange = (newDate) => {
     setValue(
       "userDateOfBirth",
@@ -85,7 +91,7 @@ export default function Information({ userId }) {
   };
   const handleSubmitInfo = async (data) => {
     const dataUpdateUser = {
-      usr_id: data.userId,
+      usr_id: data?.userId,
       usr_name: data.username,
       usr_full_name: data.userFullName,
       usr_sex: data.userSex,
@@ -94,15 +100,41 @@ export default function Information({ userId }) {
       usr_avatar: data.userAvatar,
       usr_email: data.userEmail,
     };
-    await updateUserInfo(userId, dataUpdateUser);
-    notification.success({
-      message: "Cập nhật thông tin thành công",
-      type: "success",
-      showProgress: true,
-      onClose: () => {
-        window.location.reload();
-      },
-    });
+    if (userId) {
+      await updateUserInfo(userId, dataUpdateUser);
+      notification.success({
+        message: "Cập nhật thông tin thành công",
+        type: "success",
+        showProgress: true,
+        onClose: () => {
+          window.location.reload();
+        },
+      });
+    } else {
+      dataUpdateUser.usr_password = data.password;
+      const response = await createUser(dataUpdateUser);
+      console.log(response);
+      if (response?.data && response.data.status === 201) {
+        notification.success({
+          message: "Tạo người dùng thành công",
+          type: "success",
+          showProgress: true,
+          onClose: () => {
+            window.location.reload();
+          },
+        });
+      }
+      if (response.error) {
+        notification.error({
+          message: "Xảy ra lỗi",
+          type: "error",
+          showProgress: true,
+          onClose: () => {
+            window.location.reload();
+          },
+        });
+      }
+    }
   };
 
   return (
@@ -129,14 +161,16 @@ export default function Information({ userId }) {
             Thông tin cơ bản
           </Typography.Title>
           <Flex gap={10} vertical style={{ width: "80%" }}>
-            <Input
-              type="text"
-              label="Mã người dùng"
-              name="userId"
-              register={register}
-              error={errors.userId}
-              control={control}
-            />
+            {userId && (
+              <Input
+                type="text"
+                label="Mã người dùng"
+                name="userId"
+                register={register}
+                error={errors.userId}
+                control={control}
+              />
+            )}
             <Input
               type="text"
               label="Tên đăng nhập"
@@ -169,7 +203,16 @@ export default function Information({ userId }) {
               error={errors.userPhone}
               control={control}
             />
-
+            {!userId && (
+              <Input
+                type="password"
+                label="Mật khẩu"
+                name="password"
+                register={register}
+                error={errors.password}
+                control={control}
+              />
+            )}
             <DateSelect
               onApply={handleDateChange}
               dataDate={dataUser?.usr_date_of_birth}
@@ -201,10 +244,11 @@ export default function Information({ userId }) {
         size="sm"
         variant="primary"
         type="submit"
+        loading={isLoading}
         className="w-fit border ml-6 mb-6 border-blue-500 hover:border-none hover:bg-blue-500 text-black hover:text-white hover:highlight-white  py-2 px-4 rounded cursor-pointer text-black"
         onClick={handleSubmit(handleSubmitInfo)}
       >
-        Cập nhật
+        {userId ? "Cập nhật" : "Tạo người dùng"}
       </Button>
     </Flex>
   );

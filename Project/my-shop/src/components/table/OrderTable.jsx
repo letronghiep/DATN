@@ -14,7 +14,7 @@ const columns = [
     render: (text) => {
       switch (text) {
         case "pending":
-          return   <Tag color="green">Đang xử lý</Tag>;
+          return <Tag color="green">Đang xử lý</Tag>;
         case "shipping":
           return <a style={{ color: "blue" }}>Dang giao</a>;
         case "delivered":

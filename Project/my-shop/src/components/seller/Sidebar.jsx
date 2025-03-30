@@ -24,23 +24,23 @@ const items = [
     children: [
       {
         key: "3",
-        label: <Link to="/seller/orders/list">Danh sách đơn hàng</Link>,
-        title: "/seller/orders/list",
+        label: <Link to="/seller/orders">Danh sách đơn hàng</Link>,
+        title: "/seller/orders",
       },
     ],
   },
   {
-    key: "10",
+    key: "4",
     icon: <ContainerOutlined />,
     label: `Quản lý danh mục`,
     children: [
       {
-        key: "11",
-        label: <Link to="/seller/categories/list">Danh sách danh mục</Link>,
-        title: "/seller/categories/list",
+        key: "5",
+        label: <Link to="/seller/categories">Danh sách danh mục</Link>,
+        title: "/seller/categories",
       },
       {
-        key: "12",
+        key: "6",
         label: <Link to="/seller/categories/create">Thêm danh mục</Link>,
         title: "/seller/categories/create",
       },
@@ -53,13 +53,47 @@ const items = [
     children: [
       {
         key: "8",
-        label: <Link to="/seller/products/list">Danh sách sản phẩm</Link>,
-        title: "/seller/products/list",
+        label: <Link to="/seller/products">Danh sách sản phẩm</Link>,
+        title: "/seller/products",
       },
       {
         key: "9",
         label: <Link to="/seller/products/create">Thêm sản phẩm</Link>,
         title: "/seller/products/create",
+      },
+    ],
+  },
+  {
+    key: "10",
+    icon: <ContainerOutlined />,
+    label: `Quản lý người dùng`,
+    children: [
+      {
+        key: "11",
+        label: <Link to="/seller/users">Danh sách người dùng</Link>,
+        title: "/seller/users",
+      },
+      {
+        key: "12",
+        label: <Link to="/seller/users/create">Thêm người dùng</Link>,
+        title: "/seller/users/create",
+      },
+    ],
+  },
+  {
+    key: "13",
+    icon: <ContainerOutlined />,
+    label: `Quản lý mã giảm giá/voucher`,
+    children: [
+      {
+        key: "14",
+        label: <Link to="/seller/vouchers">Danh sách vouchers</Link>,
+        title: "/seller/vouchers",
+      },
+      {
+        key: "15",
+        label: <Link to="/seller/vouchers/create">Thêm voucher</Link>,
+        title: "/seller/vouchers/create",
       },
     ],
   },
@@ -76,6 +110,7 @@ const Sidebar = () => {
 
   const onClick = (e) => {
     // setSelectedKey(e.key);
+    console.log(e);
   };
   useEffect(() => {
     const allData = items.flatMap((item) => {

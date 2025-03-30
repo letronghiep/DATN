@@ -1,14 +1,20 @@
-import { Layout, theme } from "antd";
-import React, { useEffect, useState } from "react";
+import { Drawer, Layout, theme } from "antd";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Filter from "../components/filters/Filter";
+import Footer from "../components/Footer";
 import HomeHeader from "../components/header/Header";
-import { getAuth } from "../stores/slices/authSlice";
 import { getCategoryByParentId } from "../services/category";
+import { getAuth } from "../stores/slices/authSlice";
+import ShoppingCart from "../components/shopping-cart";
 
 function HomeLayout({ children }) {
   const { Content } = Layout;
+  const [openCart, setOpenCart] = useState(false);
+  const onClose = () => {
+    setOpenCart(false);
+  };
   const {
     token: { borderRadiusLG },
   } = theme.useToken();
@@ -31,27 +37,25 @@ function HomeLayout({ children }) {
     }
     getUserData();
   }, [dispatch, navigate, userId]);
-   const [categories, setCategories] = useState([]);
-    useEffect(() => {
-      async function fetchData() {
-        try {
-          const [categoryList] = await Promise.all([
-            getCategoryByParentId(""),
-          ]);
-          setCategories(categoryList.metadata);
-        } catch (error) {
-          console.error(error);
-        }
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [categoryList] = await Promise.all([getCategoryByParentId("")]);
+        setCategories(categoryList.metadata);
+      } catch (error) {
+       console.error(error);
       }
-      fetchData();
-    }, []);
+    }
+    fetchData();
+  }, []);
   return (
     <Layout>
-      <HomeHeader user={user} />
+      <HomeHeader user={user} onOpenCart={() => setOpenCart(true)} />
       <Content
         style={{
-          maxWidth: "1200px",
-          minWidth: "1200px",
+          maxWidth: "1440px",
+          minWidth: "1440px",
           margin: "auto",
           width: "100%",
           padding: "0px 24px",
@@ -67,8 +71,18 @@ function HomeLayout({ children }) {
         >
           <Filter categories={categories} />
           {children}
+          <Drawer
+            // title="Basic Drawer"
+            placement="right"
+            closable={false}
+            onClose={onClose}
+            open={openCart}
+          >
+            <ShoppingCart />
+          </Drawer>
         </Layout>
       </Content>
+      <Footer />
     </Layout>
   );
 }

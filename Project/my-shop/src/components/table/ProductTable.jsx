@@ -1,9 +1,44 @@
 import { formatDate } from "@fullcalendar/core/index.js";
-import { Table, Tag } from "antd";
+import { Button, Modal, Table, Tag } from "antd";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ProductTable = ({ data }) => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tableId, setTableId] = useState();
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleOpenModal = (id) => {
+    setIsModalOpen(true);
+    setTableId(id);
+  };
+  const handleDeleteProduct = async () => {
+    try {
+      // const response = await deleteProduct
+      // await axiosInstance.delete(`/categories/${id}`);
+      // const response = await deleteCategory(id).unwrap();
+      // if (response.status === 200) {
+      //   notification.success({
+      //     message: "Xóa danh mục thông",
+      //     showProgress: true,
+      //     placement: "top",
+      //     onClose: () => {
+      //       window.location.reload();
+      //     },
+      //   });
+      // }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleOk = async () => {
+    await handleDeleteProduct(tableId);
+    setIsModalOpen(false);
+  };
   const columns = [
     {
       title: "Tên sản phẩm",
@@ -53,18 +88,40 @@ const ProductTable = ({ data }) => {
       key: "action",
       render: (text, record) => (
         <div className="flex flex-col">
-          <button
+          <Button
+            variant="link"
+            color="primary"
             onClick={() => navigate(`/seller/products/edit/${record._id}`)}
             className="btn btn-sm btn-primary"
           >
             Cập nhật
-          </button>
-          <button className="btn btn-sm btn-danger">Xóa</button>
-          <button className="btn btn-sm btn-success">Xem chi tiet</button>
+          </Button>
+          <Button
+            variant="link"
+            color="danger"
+            onClick={() => {
+              handleOpenModal(record._id);
+            }}
+          >
+            Xóa
+          </Button>
+          {/* <button className="btn btn-sm btn-success">Xem chi tiet</button> */}
         </div>
       ),
     },
   ];
-  return <Table columns={columns} dataSource={data?.data} pagination={true} />;
+  return (
+    <>
+      <Table columns={columns} dataSource={data?.data} pagination={true} />
+      <Modal
+        title="Xác nhận xóa"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <p>Xóa danh mục này?</p>
+      </Modal>
+    </>
+  );
 };
 export default ProductTable;

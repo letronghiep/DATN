@@ -20,7 +20,6 @@ import ImageCarousel from "../components/ImageCarousel";
 import ProductSlide from "../components/product/product-slide";
 import ProductVariation from "../components/product/product-variations";
 import { validateFormMoney } from "../helpers";
-import { addToCart } from "../services/cart";
 import { getAllCommentForProduct } from "../services/comment";
 import {
   addProductToWishList,
@@ -31,6 +30,7 @@ import {
   updateFavoriteProduct,
 } from "../services/product";
 import { socket } from "../socket";
+import { useAddToCartMutation } from "../apis/cartApis";
 
 function ProductInfo() {
   const { product_slug } = useParams();
@@ -45,6 +45,7 @@ function ProductInfo() {
   const [commentPage, setCommentPage] = useState(1);
   const [commentLimit, setCommentLimit] = useState(10);
   const [totalRows, setTotalRows] = useState(1);
+  const [addToCart] = useAddToCartMutation();
   // const dispatch = useDispatch();
   const navigate = useNavigate();
   // const userId = userStorage._id;
@@ -158,6 +159,14 @@ function ProductInfo() {
       socket.off("createdComment");
     };
   }, [socket]);
+
+  const handleGotoCheckout = async () => {
+    await handleAddToCart();
+    setTimeout(() => {
+      navigate("/checkout");
+    }, [200]);
+  };
+
   // end socket
   const handleAddToCart = async () => {
     if (!userData || Object.keys(userData).length === 0) {
@@ -170,6 +179,9 @@ function ProductInfo() {
         quantity: productQuantity,
         name: product.product_name,
         price: product_price,
+        image: product.product_thumb,
+        size: selectedOptions["Size"],
+        color: selectedOptions["Màu sắc"],
       };
       await addToCart(cart_products);
     }
@@ -322,7 +334,15 @@ function ProductInfo() {
               <ShoppingCartOutlined />
               Thêm vào giỏ hàng
             </Button>
-            <Button size="large" type="primary" className="w-1/2">
+            <Button
+              size="large"
+              type="primary"
+              style={{
+                backgroundColor: "#7C3FFF",
+              }}
+              onClick={handleGotoCheckout}
+              className="w-1/2"
+            >
               Mua ngay
             </Button>
           </div>

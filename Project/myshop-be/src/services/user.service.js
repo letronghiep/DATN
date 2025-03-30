@@ -36,6 +36,10 @@ const createUserService = async ({
   usr_salt,
   usr_email,
   usr_phone,
+  usr_address,
+  usr_city,
+  usr_district,
+  usr_ward,
   usr_sex,
   usr_avatar,
   usr_date_of_birth,
@@ -57,6 +61,10 @@ const createUserService = async ({
       usr_salt,
       usr_email,
       usr_phone,
+      usr_address,
+      usr_city,
+      usr_district,
+      usr_ward,
       usr_sex,
       usr_avatar,
       usr_date_of_birth,
@@ -84,9 +92,13 @@ const updateUserService = async ({
   usr_date_of_birth,
   usr_role,
   usr_status,
+  usr_address,
+  usr_city,
+  usr_district,
+  usr_ward,
 }) => {
   const foundUser = await User.findOne({
-    _id: _id,
+    _id: new Types.ObjectId(_id),
   });
   if (!foundUser) throw new NotFoundError("Không tìm thấy người dùng");
   // const passwordHash = await bcrypt.hash(usr_password, 10);
@@ -95,6 +107,10 @@ const updateUserService = async ({
       usr_id,
       usr_name,
       usr_full_name,
+      usr_address,
+      usr_city,
+      usr_district,
+      usr_ward,
       usr_password,
       usr_salt,
       usr_email,
@@ -131,13 +147,42 @@ const getListUserService = async ({
   sort = "ctime",
   page = 1,
   filter = {},
+  query = {},
 }) => {
-  const roles = await Role.find({
-    rol_name: { $in: ["shop", "user"] },
-  }).select("_id");
+  const { q, usr_status } = query;
+  const searchText = q
+    ? {
+        $or: [
+          { usr_name: { $regex: q, $options: "i" } },
+          { usr_full_name: { $regex: q, $options: "i" } },
+          { usr_email: { $regex: q, $options: "i" } },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $toString: "$usr_id" },
+                regex: q,
+                options: "i",
+              },
+            },
+          },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $toString: "$usr_phone" },
+                regex: q,
+                options: "i",
+              },
+            },
+          },
+        ],
+      }
+    : {};
+  // const roles = await Role.find({
+  //   rol_name: { $in: ["shop", "user"] },
+  // }).select("_id");
   // Lấy danh sách các ID vai tròs
-  const roleIds = roles.map((role) => role._id);
-  filter = { usr_role: { $in: roleIds } };
+  // const roleIds = roles.map((role) => role._id);
+  filter = { ...(usr_status !== "all" ? { usr_status } : {}), ...searchText };
   return await getListUser({
     limit,
     sort,
@@ -257,6 +302,23 @@ const getMeService = async ({ userId }) => {
     throw new ErrorResponse(error);
   }
 };
+const deleteUserService = async ({ user_id }) => {
+  try {
+    const foundUser = await User.findOne({
+      _id: new Types.ObjectId(user_id),
+    });
+    if (!foundUser) throw new AuthFailureError("Không tìm thấy người dùng");
+    await User.findByIdAndDelete({
+      _id: new Types.ObjectId(user_id),
+    });
+    // await Shop.findOneAndDelete({
+    //   usr_id: user_id,
+    // });
+    return 1;
+  } catch (error) {
+    console.log(error);
+  }
+};
 module.exports = {
   createUserService,
   getListUserService,
@@ -265,4 +327,5 @@ module.exports = {
   blockUserService,
   updateUserToShopService,
   getMeService,
+  deleteUserService,
 };
