@@ -46,6 +46,7 @@ function ProductInfo() {
   const [commentLimit, setCommentLimit] = useState(10);
   const [totalRows, setTotalRows] = useState(1);
   const [addToCart] = useAddToCartMutation();
+  const [sku_id, setSku_id] = useState(null);
   // const dispatch = useDispatch();
   const navigate = useNavigate();
   // const userId = userStorage._id;
@@ -118,7 +119,9 @@ function ProductInfo() {
         title: category.category_name,
       }));
   }, [product]);
-  const selectedCombination = Object.values(selectedOptions).join(", ") || "";
+  const selectedCombination = useMemo(() => {
+    return Object.values(selectedOptions).join(", ") || "";
+  }, [selectedOptions]);
   const product_stock = useMemo(() => {
     if (!product) return 0;
     const foundModel = product.product_models.find(
@@ -135,6 +138,15 @@ function ProductInfo() {
     if (foundModel) return foundModel.sku_price;
     else return product.product_price;
   }, [selectedCombination, product]);
+  useEffect(() => {
+    if (selectedCombination) {
+      const foundModel = product.product_models.find(
+        (model) => model.sku_name === selectedCombination
+      );
+      if (foundModel) setSku_id(foundModel.sku_id);
+    }
+  }, [selectedCombination, product]);
+  console.log(selectedCombination);
   //socket
   useEffect(() => {
     if (product) {
@@ -182,6 +194,7 @@ function ProductInfo() {
         image: product.product_thumb,
         size: selectedOptions["Size"],
         color: selectedOptions["Màu sắc"],
+        sku_id: sku_id,
       };
       await addToCart(cart_products);
     }

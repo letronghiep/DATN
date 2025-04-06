@@ -70,7 +70,8 @@ router.post(
 );
 router.delete(
   "/seller/:product_id",
-  grantAccess("deleteOwn", "product"),
+  authentication,
+  // grantAccess("deleteOwn", "product"),
   asyncHandler(deleteProductByShop)
 );
 // admin

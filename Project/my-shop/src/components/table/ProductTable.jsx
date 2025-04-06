@@ -1,13 +1,14 @@
 import { formatDate } from "@fullcalendar/core/index.js";
-import { Button, Modal, Table, Tag } from "antd";
+import { Button, Modal, notification, Table, Tag } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDeleteProductMutation } from "../../apis/productsApi";
 
 const ProductTable = ({ data }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tableId, setTableId] = useState();
-
+  const [deleteProduct] = useDeleteProductMutation();
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -18,19 +19,17 @@ const ProductTable = ({ data }) => {
   };
   const handleDeleteProduct = async () => {
     try {
-      // const response = await deleteProduct
-      // await axiosInstance.delete(`/categories/${id}`);
-      // const response = await deleteCategory(id).unwrap();
-      // if (response.status === 200) {
-      //   notification.success({
-      //     message: "Xóa danh mục thông",
-      //     showProgress: true,
-      //     placement: "top",
-      //     onClose: () => {
-      //       window.location.reload();
-      //     },
-      //   });
-      // }
+      const response = await deleteProduct(tableId).unwrap();
+      if (response.status === 200) {
+        notification.success({
+          message: "Xóa sản phẩm thành công",
+          showProgress: true,
+          placement: "top",
+          onClose: () => {
+            window.location.reload();
+          },
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -118,8 +117,10 @@ const ProductTable = ({ data }) => {
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
+        okText="Xóa"
+        cancelText="Hủy"
       >
-        <p>Xóa danh mục này?</p>
+        <p>Xóa sản phẩm này?</p>
       </Modal>
     </>
   );

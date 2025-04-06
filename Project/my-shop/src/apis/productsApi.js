@@ -45,11 +45,18 @@ export const productsApi = createApi({
       }),
       providesTags: ["products"],
     }),
+    deleteProduct: builder.mutation({
+      query: (id) => ({
+        url: `/product/seller/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 export const {
   useGetHomepageQuery,
   useGetArrivalsQuery,
   useSearchProductQuery,
+  useDeleteProductMutation,
 } = productsApi;
 export default productsApi;

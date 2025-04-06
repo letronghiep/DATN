@@ -1,12 +1,21 @@
 import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Flex, Radio, Select } from "antd";
-import { useCallback, useState, useEffect } from "react";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Controller,
+  useFieldArray
+} from "react-hook-form";
 
 const { Option } = Select;
 
-const VariationForm = ({ variations = [] }) => {
-  const { control, watch, setValue, getValues } = useFormContext();
+const VariationForm = ({
+  variations = [],
+  control,
+  watch,
+  setValue,
+  getValues,
+}) => {
+  // const {} = useForm();
   const [selectedGroups, setSelectedGroups] = useState({});
 
   const { fields, append, remove, update } = useFieldArray({
@@ -23,49 +32,61 @@ const VariationForm = ({ variations = [] }) => {
   }, [append]);
 
   const handleChangeGroup = useCallback((index, groupId) => {
-    setSelectedGroups(prev => ({
+    setSelectedGroups((prev) => ({
       ...prev,
-      [index]: groupId
+      [index]: groupId,
     }));
   }, []);
 
-  const handleVariationChange = useCallback((index, value) => {
-    const currentValues = getValues();
-    const updatedVariation = {
-      ...currentValues.variations[index],
-      name: value,
-      options: [],
-    };
+  const handleVariationChange = useCallback(
+    (index, value) => {
+      const currentValues = getValues();
+      const updatedVariation = {
+        ...currentValues.variations[index],
+        name: value,
+        options: [],
+      };
 
-    setValue(`variations.${index}.name`, value);
-    setValue(`variations.${index}.options`, []);
-    setSelectedGroups(prev => ({
-      ...prev,
-      [index]: undefined
-    }));
+      setValue(`variations.${index}.name`, value);
+      setValue(`variations.${index}.options`, []);
+      
+      setSelectedGroups((prev) => ({
+        ...prev,
+        [index]: undefined,
+      }));
 
-    update(index, updatedVariation);
-  }, [setValue, update, getValues]);
+      update(index, updatedVariation);
+    },
+    [setValue, update, getValues]
+  );
 
-  const getVariationOptions = useCallback((fieldName, index) => {
-    const variation = variations?.find((v) => v.display_name === fieldName);
-    if (!variation) return [];
+  const getVariationOptions = useCallback(
+    (field, fieldName, index) => {
+      console.log(field);
+      const variation = variations?.find((v) => v.display_name === fieldName);
+      if (!variation) return [];
 
-    if (variation.group_list.length > 1 && selectedGroups[index]) {
-      const group = variation.group_list.find((g) => g.group_id === selectedGroups[index]);
-      return group?.value_list || [];
-    }
+      if (variation.group_list.length > 1 && selectedGroups[index]) {
+        const group = variation.group_list.find(
+          (g) => g.group_id === selectedGroups[index]
+        );
+        return group?.value_list || [];
+      }
 
-    return variation.group_list[0]?.value_list || [];
-  }, [selectedGroups, variations]);
+      return variation.group_list[0]?.value_list || [];
+    },
+    [selectedGroups, variations]
+  );
 
   useEffect(() => {
     const subscription = watch((value, { name }) => {
-      if (name?.startsWith('variations.') && name?.endsWith('.name')) {
-        const index = parseInt(name.split('.')[1]);
+      if (name?.startsWith("variations.") && name?.endsWith(".name")) {
+        const index = parseInt(name.split(".")[1]);
         const variationName = value.variations[index]?.name;
         if (variationName) {
-          const variation = variations?.find(v => v.display_name === variationName);
+          const variation = variations?.find(
+            (v) => v.display_name === variationName
+          );
           if (variation?.group_list.length === 1) {
             setValue(`variations.${index}.options`, []);
             const currentValues = getValues();
@@ -107,7 +128,9 @@ const VariationForm = ({ variations = [] }) => {
                           {...field}
                           placeholder="Chọn phân loại"
                           style={{ width: "90%" }}
-                          onChange={(value) => handleVariationChange(index, value)}
+                          onChange={(value) =>
+                            handleVariationChange(index, value)
+                          }
                         >
                           {variations?.map((variation) => (
                             <Option
@@ -115,7 +138,8 @@ const VariationForm = ({ variations = [] }) => {
                               value={variation.display_name}
                               disabled={watch("variations")?.some(
                                 (v, i) =>
-                                  i !== index && v.name === variation.display_name
+                                  i !== index &&
+                                  v.name === variation.display_name
                               )}
                             >
                               {variation.display_name}
@@ -136,22 +160,24 @@ const VariationForm = ({ variations = [] }) => {
                     <div className="flex flex-col gap-x-4 flex-[6]">
                       {variations?.find((v) => v.display_name === field.name)
                         ?.group_list.length > 1 && (
-                          <Radio.Group 
-                            onChange={(e) => handleChangeGroup(index, e.target.value)}
-                            value={selectedGroups[index]}
-                          >
-                            {variations
-                              ?.find((v) => v.display_name === field.name)
-                              ?.group_list.map((option) => (
-                                <Radio
-                                  key={option.group_id}
-                                  value={option.group_id}
-                                >
-                                  {option.group_name}
-                                </Radio>
-                              ))}
-                          </Radio.Group>
-                        )}
+                        <Radio.Group
+                          onChange={(e) =>
+                            handleChangeGroup(index, e.target.value)
+                          }
+                          value={selectedGroups[index]}
+                        >
+                          {variations
+                            ?.find((v) => v.display_name === field.name)
+                            ?.group_list.map((option) => (
+                              <Radio
+                                key={option.group_id}
+                                value={option.group_id}
+                              >
+                                {option.group_name}
+                              </Radio>
+                            ))}
+                        </Radio.Group>
+                      )}
                       <Controller
                         name={`variations.${index}.options`}
                         control={control}
@@ -163,14 +189,16 @@ const VariationForm = ({ variations = [] }) => {
                             style={{ width: "90%" }}
                             className="ml-1.5"
                           >
-                            {getVariationOptions(field.name, index).map((option) => (
-                              <Option
-                                key={option.value_id}
-                                value={option.value_id.toString()}
-                              >
-                                {option.value_name}
-                              </Option>
-                            ))}
+                            {getVariationOptions(field, field.name, index).map(
+                              (option) => (
+                                <Option
+                                  key={option.value_id}
+                                  value={option.value_id.toString()}
+                                >
+                                  {option.value_name}
+                                </Option>
+                              )
+                            )}
                           </Select>
                         )}
                       />

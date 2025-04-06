@@ -34,10 +34,11 @@ const BANK_INFO = {
 };
 
 function CheckoutPage() {
+  const [checkout_order, setCheckout_order] = useState();
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [productCarts, setProductCarts] = useState();
   const [discountCode, setDiscountCode] = useState("");
   const { data, isLoading } = useGetCartQuery();
-  // const [applyVoucher] = useApplyVoucherMutation();
-  // const [checkout] = useCheckoutMutation();
   const { data: vouchersData } = useGetDiscountsQuery({
     q: "",
     discount_status: "active",
@@ -52,8 +53,12 @@ function CheckoutPage() {
             userId: data?.metadata?.cart_userId,
             shop_order_ids: data?.metadata?.cart_products,
             discount_code: discountCode,
+            payment_method: paymentMethod,
           });
 
+          if (response.data.status === 200) {
+            setCheckout_order(response.data?.metadata.checkout_order);
+          }
           if (response.error) {
             // Xử lý lỗi nếu có
             console.error("Lỗi khi gọi API:", response.error);
@@ -65,7 +70,12 @@ function CheckoutPage() {
     };
 
     handleReviewOrder();
-  }, [data?.metadata, reviewOrder, discountCode]);
+  }, [data, data?.metadata, reviewOrder, paymentMethod]);
+  useEffect(() => {
+    if (data && data.metadata) {
+      setProductCarts(data?.metadata?.cart_products);
+    }
+  }, [data]);
   const {
     control,
     handleSubmit,
@@ -73,7 +83,7 @@ function CheckoutPage() {
     setValue,
   } = useForm({
     defaultValues: {
-      payment_method: "BANK",
+      payment_method: "COD",
       fullName: "",
       email: "",
       phone: "",
@@ -90,8 +100,6 @@ function CheckoutPage() {
     ward: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("BANK");
-
   const cartItems = data?.metadata?.cart_products || [];
   const subtotal = data?.metadata?.cart_total_price || 0;
   const shipping = 0;
@@ -101,6 +109,18 @@ function CheckoutPage() {
   const handleApplyDiscount = async () => {
     try {
       // await applyVoucher(discountCode);
+      if (discountCode) {
+        const response = await reviewOrder({
+          cartId: data?.metadata?._id,
+          userId: data?.metadata?.cart_userId,
+          shop_order_ids: data?.metadata?.cart_products,
+          discount_code: discountCode,
+          payment_method: paymentMethod,
+        });
+        if (response.data?.status === 200) {
+          setCheckout_order(response.data?.metadata.checkout_order);
+        }
+      }
     } catch (error) {
       console.error("Error applying voucher:", error);
     }
@@ -148,7 +168,35 @@ function CheckoutPage() {
   if (isLoading) {
     return <SpinLoading />;
   }
-
+  if (productCarts && productCarts.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="text-center">
+          <svg
+            className="w-20 h-20 mx-auto mb-6 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            />
+          </svg>
+          <h2 className="text-2xl font-semibold mb-4">Giỏ hàng của bạn đang trống</h2>
+          <p className="text-gray-500 mb-8">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+          <Link to="/">
+            <Button type="primary" size="large" className="bg-black hover:!bg-white hover:!text-black hover:!border-black">
+              Quay về trang chủ
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white">
       <div className="max-w-[1440px] mx-auto px-4 py-8">
@@ -417,23 +465,33 @@ function CheckoutPage() {
               <div className="space-y-2 mb-6">
                 <Flex justify="space-between">
                   <Text>Tạm tính:</Text>
-                  <Text>{subtotal.toLocaleString()}₫</Text>
+                  <Text>{checkout_order?.totalPrice.toLocaleString()}₫</Text>
                 </Flex>
                 <Flex justify="space-between">
                   <Text>Phí vận chuyển:</Text>
                   <Text>
-                    {shipping === 0 ? "0 ₫" : shipping.toLocaleString() + "₫"}
+                    {(checkout_order && checkout_order?.feeShip === 0) ||
+                    !checkout_order?.feeShip
+                      ? "0 ₫"
+                      : checkout_order?.feeShip.toLocaleString() + "₫"}
                   </Text>
                 </Flex>
                 <Flex justify="space-between">
                   <Text>Điểm tích lũy:</Text>
                   <Text>{points} ₫</Text>
                 </Flex>
+                <Flex justify="space-between">
+                  <Text>Mã giảm giá:</Text>
+                  <Text>{checkout_order?.totalDiscount} ₫</Text>
+                </Flex>
                 <div className="mt-4">
                   <Flex justify="space-between">
                     <Text strong>Tổng cộng:</Text>
                     <Text strong className="text-xl">
-                      {total.toLocaleString()}₫
+                      {checkout_order?.totalCheckout > 0
+                        ? checkout_order?.totalCheckout.toLocaleString()
+                        : checkout_order?.totalPrice.toLocaleString()}
+                      ₫
                     </Text>
                   </Flex>
                 </div>

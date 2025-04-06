@@ -6,6 +6,7 @@ import {
   useUpdateCartItemMutation,
   useRemoveFromCartMutation,
   useCheckoutMutation,
+  useDeleteCartMutation,
 } from "../apis/cartApis";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +17,7 @@ function ShoppingCart({ onClose }) {
   // Queries & Mutations
   const { data, isLoading } = useGetCartQuery();
   const [updateCartItem] = useUpdateCartItemMutation();
-  const [removeFromCart] = useRemoveFromCartMutation();
+  const [deleteCart] = useDeleteCartMutation();
   const [checkout, { isLoading: isCheckingOut }] = useCheckoutMutation();
 
   const cartItems = data?.metadata?.cart_products || [];
@@ -78,9 +79,9 @@ function ShoppingCart({ onClose }) {
   };
 
   // Hàm xóa sản phẩm khỏi giỏ hàng
-  const handleRemoveItem = async (id) => {
+  const handleRemoveItem = async () => {
     try {
-      await removeFromCart(id).unwrap();
+      await deleteCart().unwrap();
       message.success("Đã xóa sản phẩm khỏi giỏ hàng");
     } catch (error) {
       message.error("Không thể xóa sản phẩm");
@@ -202,7 +203,7 @@ function ShoppingCart({ onClose }) {
         </div>
       ) : (
         <div className="text-center py-8">
-          <Text className="text-gray-500">Your shopping bag is empty</Text>
+          <Text className="text-gray-500">Giỏ hàng của bạn đang trống</Text>
         </div>
       )}
     </Card>

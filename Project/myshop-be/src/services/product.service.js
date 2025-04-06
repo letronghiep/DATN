@@ -86,10 +86,10 @@ const createProductService = async ({
     product_ratingAvg,
     product_status,
     product_variations,
-    product_models,
+    // product_models,
   });
   if (product && sku_list.length) {
-    createSkuService({
+    const skus = await createSkuService({
       sku_list,
       product_id: product._id,
     }).then();
@@ -98,6 +98,10 @@ const createProductService = async ({
       0
     );
     product.product_quantity = total_stock;
+    console.log({ skus });
+    await Product.findByIdAndUpdate(product._id, {
+      $set: { product_models: skus },
+    });
   }
   // product.product_price =
   await insertInventory({
@@ -325,7 +329,7 @@ const searchProductService = async ({
         ],
       }
     : {};
-    const category = product_category.split(",");
+  const category = product_category.split(",");
   const result = await paginate({
     model: Product,
     filter: {
@@ -398,31 +402,32 @@ const getInfoProductService = async ({ product_slug }) => {
     },
     {}
   );
-  const foundVariation = await Variation.findOne({
-    category_id: { $in: foundProduct.product_category },
-  }).lean();
-  const variations = foundProduct.product_variations?.map(
-    (product_variation) => {
-      return foundVariation?.tier_variation_list?.find(
-        (variation) => variation.display_name === product_variation.name
-      )?.group_list[0].value_list;
-    }
-  );
-  const product_variations = foundProduct?.product_variations?.map(
-    (product_variation) => {
-      const oldOptions = product_variation?.options;
-      const options = oldOptions?.map(
-        (option) =>
-          variations.flat().find((variation) => variation.value_id === option)
-            ?.value_name
-      );
-      return {
-        name: product_variation.name,
-        options,
-        images: product_variation.images,
-      };
-    }
-  );
+  // const foundVariation = await Variation.findOne({
+  //   category_id: { $in: foundProduct.product_category },
+  // }).lean();
+  // const variations = foundProduct.product_variations?.map(
+  //   (product_variation) => {
+  //     return foundVariation?.tier_variation_list?.find(
+  //       (variation) => variation.display_name === product_variation.name
+  //     )?.group_list[0].value_list;
+  //   }
+  // );
+  // console.log( foundProduct.product_variations );
+  // const product_variations = foundProduct?.product_variations?.map(
+  //   (product_variation) => {
+  //     const oldOptions = product_variation?.options;
+  //     const options = oldOptions?.map(
+  //       (option) =>
+  //         variations.flat().find((variation) => variation.value_id === option)
+  //           ?.value_name
+  //     );
+  //     return {
+  //       name: product_variation.name,
+  //       options,
+  //       images: product_variation.images,
+  //     };
+  //   }
+  // );
   const discounts = await findAllDiscountSelect({
     filter: {
       discount_shopId: foundProduct.product_shop,
@@ -442,7 +447,7 @@ const getInfoProductService = async ({ product_slug }) => {
     ...foundProduct,
     product_category: flattenCategories(category),
     product_attributes,
-    product_variations,
+    // product_variations,
     product_promotion: discounts,
   };
 

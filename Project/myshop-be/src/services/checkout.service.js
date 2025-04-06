@@ -56,6 +56,7 @@ const checkoutReviewService = async ({
   userId,
   shop_order_ids = [],
   discount_code = "",
+  payment_method = "",
 }) => {
   const foundCart = await cartModel.findOne({
     _id: new Types.ObjectId(cartId),
@@ -71,6 +72,11 @@ const checkoutReviewService = async ({
     totalDiscount: 0, // tong giam gia
     totalCheckout: 0, // tong thanh toan
   };
+  if (payment_method === "BANK") {
+    checkout_order.feeShip = 0;
+  } else {
+    checkout_order.feeShip = 30000;
+  }
   const shop_order_ids_new = [];
   // tinh tong tien bill
   // for (let i = 0; i < shop_order_ids.length; i++) {
@@ -91,6 +97,7 @@ const checkoutReviewService = async ({
   }, 0);
   // tong tien truoc xu li
   checkout_order.totalPrice = +checkoutPrice;
+  checkout_order.totalCheckout = +checkoutPrice + checkout_order.feeShip;
   const itemCheckout = {
     // shopId,
     discount_code,
@@ -123,7 +130,7 @@ const checkoutReviewService = async ({
     checkout_order.totalDiscount += discount;
     if (discount > 0) {
       itemCheckout.priceApplyDiscount = checkoutPrice - discount;
-      checkout_order.totalCheckout += itemCheckout.priceApplyDiscount;
+      checkout_order.totalCheckout = itemCheckout.priceApplyDiscount + checkout_order.feeShip;;
     }
   }
   shop_order_ids_new.push(itemCheckout);

@@ -9,41 +9,45 @@ function ProductCreatePage() {
     const submitData = {
       ...data,
       product_price: parseFloat(
-        data.sku_list?.length ? data.sku_list[0].price : data.product_price
+        data.sku_list?.length ? data.sku_list[0].sku_price : data.product_price
       ),
       product_quantity: parseInt(
         data.sku_list?.length
           ? data.sku_list.reduce(
-              (total, sku) => (total += parseInt(sku.stock)),
+              (total, sku) => (total += parseInt(sku.sku_stock)),
               0
             )
           : data.product_quantity
       ),
     };
     console.log({submitData});
-    // const res = await createProduct(submitData);
-    // if (res.status === 201) {
-    //   notification.success({
-    //     message: "Tạo sản phẩm thành công",
-    //     showProgress: true,
-    //     placement: "top",
-    //     // onClose: () => {
-    //     //   navigate("/login");
-    //     // },
-    //   });
-    // } else {
-    //   notification.error({
-    //     message: "Something went wrong",
-    //     showProgress: true,
-    //     placement: "top",
-    //   });
-    // }
+    const res = await createProduct(submitData);
+    if (res.status === 201) {
+      notification.success({
+        message: "Tạo sản phẩm thành công",
+        showProgress: true,
+        placement: "top",
+        // onClose: () => {
+        //   navigate("/login");
+        // },
+      });
+    } else {
+      notification.error({
+        message: "Something went wrong",
+        showProgress: true,
+        placement: "top",
+      });
+    }
   };
 
   return (
     <div className="w-[90%] relative">
       <ProductForm
         onSubmit={onSubmit}
+        isCreate={true}
+        actionLabel="Tạo sản phẩm"
+        // secondaryAction=""
+        secondaryActionLabel="Hủy"
       />
       {/* <FooterView
         actionLabel="Lưu và hiển thị"

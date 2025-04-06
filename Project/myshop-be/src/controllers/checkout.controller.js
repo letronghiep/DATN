@@ -19,6 +19,7 @@ const checkoutReview = async (req, res, next) => {
       cartId: req.body.cartId,
       shop_order_ids: req.body.shop_order_ids,
       discount_code: req.body.discount_code,
+      payment_method: req.body.payment_method,
       // cart_products: req.body.cart_products,
     }),
   }).send(res);

@@ -2,16 +2,15 @@ import { Loading3QuartersOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import ProductForm from "./ProductForm";
 import { getProductData } from "../../../services/product";
-import { useForm } from "react-hook-form";
+import ProductForm from "./ProductForm";
 
 function ProductEditPage() {
   // console.log(params);
   const { productId } = useParams();
   const [product, setProduct] = useState();
   const [loading, setLoading] = useState(true);
-  const { handleSubmit } = useForm();
+  // const { handleSubmit } = useForm();
   const { Title } = Typography;
   useEffect(() => {
     async function fetchProduct() {
@@ -30,8 +29,8 @@ function ProductEditPage() {
     fetchProduct();
   }, [productId]);
   const onSubmit = async (data) => {
-    console.log("data");
-    console.log(data);
+    // console.log("data");
+    console.log({ data });
     // const { sku_list } = data;
     // const filteredValue = variations?.flatMap((variation) =>
     //   variation.tier_variation_list.flatMap((group) =>
@@ -95,7 +94,7 @@ function ProductEditPage() {
     // };
     // console.log({data});
     // console.log(submitData);
-    // const res = await createProduct(submitData);
+    // const res = await updateProduct(submitData);
     // if (res.status === 201) {
     //   notification.success({
     //     message: "Cập nhật sản phẩm thành công",
@@ -118,7 +117,7 @@ function ProductEditPage() {
   return (
     <div className="w-[90%] relative">
       <ProductForm
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={onSubmit}
         product={product}
         secondaryAction={() => {}}
         actionLabel="Cập nhật"

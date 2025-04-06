@@ -1,6 +1,6 @@
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { Flex, Select } from "antd";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Controller } from "react-hook-form";
 import SelectCustom from "../../../components/inputs/Select";
 
@@ -36,17 +36,28 @@ const styles = {
 
 const INITIAL_MAX_SIZE = 9;
 
-const AttributeItem = ({ attr, idx, control }) => (
+const AttributeItem = ({ attr, control, name, onChange }) => (
   <div style={styles.formItem}>
     <div style={styles.label}>
       <span style={styles.labelStyle}>{attr.display_name}</span>
     </div>
     <div style={styles.input}>
       <Controller
-        name={`product_attributes.${idx}.${attr.attribute_id}`}
+        name={name}
         control={control}
         render={({ field }) => (
-          <Select {...field} style={{ width: "100%" }} placeholder={`Chọn ${attr.display_name}`}>
+          <Select 
+            {...field} 
+            style={{ width: "100%" }} 
+            placeholder={`Chọn ${attr.display_name}`}
+            onChange={(value) => {
+              field.onChange(value);
+              onChange?.({
+                id: attr.attribute_id,
+                value: value
+              });
+            }}
+          >
             {attr.children.map((item) => (
               <Option key={item.value_id} value={item.value_id}>
                 {item.display_name}
@@ -59,12 +70,27 @@ const AttributeItem = ({ attr, idx, control }) => (
   </div>
 );
 
-function Attribute({ attributes, brands, control, brandName }) {
+function Attribute({ attributes, brands, control, brandName, setValue }) {
   const [maxSize, setMaxSize] = useState(INITIAL_MAX_SIZE);
+  const [selectedAttributes, setSelectedAttributes] = useState([]);
   
   const toggleSize = useCallback(() => {
     setMaxSize(prev => prev === INITIAL_MAX_SIZE ? attributes.length : INITIAL_MAX_SIZE);
   }, [attributes?.length]);
+
+  const handleAttributeChange = (attribute) => {
+    setSelectedAttributes(prev => {
+      const newAttributes = prev.filter(attr => attr.id !== attribute.id);
+      if (attribute.value) {
+        newAttributes.push(attribute);
+      }
+      return newAttributes;
+    });
+  };
+
+  useEffect(() => {
+    setValue("product_attributes", selectedAttributes);
+  }, [selectedAttributes, setValue]);
 
   return (
     <>
@@ -90,8 +116,9 @@ function Attribute({ attributes, brands, control, brandName }) {
                 <AttributeItem
                   key={attr.attribute_id}
                   attr={attr}
-                  idx={idx}
                   control={control}
+                  name={`product_attributes.${idx}`}
+                  onChange={handleAttributeChange}
                 />
               )
           )}

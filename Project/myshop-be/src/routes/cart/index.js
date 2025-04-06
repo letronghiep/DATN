@@ -12,10 +12,7 @@ const { grantAccess } = require("../../middlewares/rbac.middleware");
 const router = express.Router();
 router.use(authentication);
 router.post("", asyncHandler(addToCart));
-router.patch(
-  "/update",
-  asyncHandler(updateCart)
-);
+router.patch("/update", asyncHandler(updateCart));
 router.get("", asyncHandler(getListUserCart));
-router.delete("", grantAccess("deleteOwn", "cart"), asyncHandler(deleteCart));
+router.delete("", asyncHandler(deleteCart));
 module.exports = router;
