@@ -23,6 +23,17 @@ import EditVoucher from "../pages/seller/vouchers/EditVoucher";
 import VoucherListPage from "../pages/seller/vouchers/VoucherListPage";
 import UnauthorizedPage from "../pages/Unauthorized";
 import CheckoutPage from "../pages/CheckoutPage";
+import CheckoutSuccess from "../pages/CheckoutSuccess";
+import MyOrder from "../pages/MyOrder";
+import OrderDetailPage from "../pages/OrderDetailPage";
+import UserProfile from "../pages/UserProfile";
+import FavoriteProductPage from "../pages/FavoriteProductPage";
+import BannerList from "../components/seller/banners/BannerList";
+import BannerForm from "../components/seller/banners/BannerForm";
+import NotificationsPage from "../pages/seller/NotificationsPage";
+import SearchPage from "../pages/SearchPage";
+import FlashsalePage from "../pages/seller/flashsale/FlashsalePage";
+import CreateFlashSale from "../pages/seller/flashsale/CreateFlashSale";
 // import ShopLayout from "../layout/ShopLayout";
 // import EditProfile from "../pages/seller/profile/edit/EditProfile";
 // import SalePage from "../pages/seller/SalePage";
@@ -82,8 +93,50 @@ export const routes = [
     layout: HomeLayoutNoSidebar,
   },
   {
+    path: "/favorite-products",
+    component: FavoriteProductPage,
+    exact: true,
+    private: false,
+    layout: HomeLayoutNoSidebar,
+  },
+  {
+    path: "/search",
+    component: SearchPage,
+    exact: true,
+    private: false,
+    layout: HomeLayoutNoSidebar,
+  },
+  {
+    path: "/profile",
+    component: UserProfile,
+    exact: true,
+    private: false,
+    layout: HomeLayoutNoSidebar,
+  },
+  {
     path: "/checkout",
     component: CheckoutPage,
+    exact: true,
+    private: true,
+    layout: HomeLayoutNoSidebar,
+  },
+  {
+    path: "/checkout/success",
+    component: CheckoutSuccess,
+    exact: true,
+    private: true,
+    layout: HomeLayoutNoSidebar,
+  },
+  {
+    path: "/my-orders",
+    component: MyOrder,
+    exact: true,
+    private: true,
+    layout: HomeLayoutNoSidebar,
+  },
+  {
+    path: "/my-orders/:orderId",
+    component: OrderDetailPage,
     exact: true,
     private: true,
     layout: HomeLayoutNoSidebar,
@@ -243,4 +296,58 @@ export const routes = [
     layout: ShopLayout,
     permission: "shop",
   },
+  {
+    path: "/seller/banners",
+    component: BannerList,
+    exact: true,
+    private: true,
+    layout: ShopLayout,
+    permission: "shop",
+  },
+  {
+    path: "/seller/banners/create",
+    component: BannerForm,
+    exact: true,
+    private: true,
+    layout: ShopLayout,
+    permission: "shop",
+  },
+  {
+    path: "/seller/banners/edit/:id",
+    component: BannerForm,
+    exact: true,
+    private: true,
+    layout: ShopLayout,
+    permission: "shop",
+  },
+  {
+    path: "/seller/notifications",
+    component: NotificationsPage,
+    exact: true,
+    private: true,
+    layout: ShopLayout,
+    permission: "shop",
+  },
+  {
+    path: "/seller/flashsale",
+    component: FlashsalePage,
+    exact: true,
+    private: true,
+    layout: ShopLayout,
+    permission: "shop",
+  },
+  {
+    path: "/seller/flashsale/create",
+    component: CreateFlashSale,
+    exact: true,
+    private: true,
+    layout: ShopLayout,
+    permission: "shop",
+  },
+  // {
+  //   path: "/seller/flashsale/edit/:id",
+  //   component: EditFlashSale,
+  //   exact: true,
+  //   private: true,
+  // },
 ];

@@ -1,7 +1,7 @@
 "use strict";
 const { Types } = require("mongoose");
 const Order = require("../models/order.model");
-const Product = require("../models/product.model");
+const PageView = require("../models/pageview.model");
 const getDatesInRange = (startDate, endDate) => {
   const dates = [];
   let currentDate = new Date(startDate);
@@ -29,12 +29,65 @@ const getWeekRange = (startDate) => {
     previousWeek: { start: startOfPreviousWeek, end: endOfPreviousWeek },
   };
 };
-const getAnalysisDataService = async ({ userId }) => {
+const getDateRange = (type, startDate, endDate) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  switch (type) {
+    case 'today':
+      return {
+        start: today,
+        end: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      };
+    case 'yesterday':
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return {
+        start: yesterday,
+        end: today
+      };
+    case 'week':
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(endOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+      return {
+        start: startOfWeek,
+        end: endOfWeek
+      };
+    case 'month':
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      return {
+        start: startOfMonth,
+        end: endOfMonth
+      };
+    case 'specific-date':
+      return {
+        start: new Date(startDate),
+        end: new Date(endDate)
+      };
+    default:
+      return {
+        start: today,
+        end: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      };
+  }
+};
+const getAnalysisDataService = async ({ userId, type = 'today', startDate, endDate }) => {
   try {
+    const { start, end } = getDateRange(type, startDate, endDate);
+
     const orderDataPromise = Order.aggregate([
       {
         $match: {
           order_userId: new Types.ObjectId(userId),
+          createdAt: {
+            $gte: start,
+            $lte: end
+          }
         },
       },
       {
@@ -48,15 +101,13 @@ const getAnalysisDataService = async ({ userId }) => {
       },
     ]);
 
-    const weeklyRevenueData = (async () => {
-      const today = new Date();
-      const { currentWeek, previousWeek } = getWeekRange(today);
-      const weekly = await Order.aggregate([
+    const revenueData = (async () => {
+      const revenue = await Order.aggregate([
         {
           $match: {
             createdAt: {
-              $gte: new Date(previousWeek.start),
-              $lte: new Date(currentWeek.end),
+              $gte: start,
+              $lte: end
             },
           },
         },
@@ -65,45 +116,12 @@ const getAnalysisDataService = async ({ userId }) => {
         },
         {
           $group: {
-            _id: {
-              $cond: [
-                {
-                  $and: [
-                    { $gte: ["$createdAt", new Date(previousWeek.start)] },
-                    { $lte: ["$createdAt", new Date(previousWeek.end)] },
-                  ],
-                },
-                "previousWeek",
-                "currentWeek",
-              ],
-            },
-            // sales: { $sum: "$order_total" }, // Uncomment if needed
+            _id: null,
             revenue: { $sum: "$order_products.priceApplyDiscount" },
             total_order: { $sum: 1 },
           },
         },
       ]);
-      const currentWeekRevenue = weekly.find(
-        (item) => item._id === "currentWeek"
-      )?.revenue;
-      const previousWeekRevenue = weekly.find(
-        (item) => item._id === "previousWeek"
-      )?.revenue;
-      const currentWeekOrder = weekly.find(
-        (item) => item._id === "currentWeek"
-      )?.total_order;
-      const previousWeekOrder = weekly.find(
-        (item) => item._id === "previousWeek"
-      )?.total_order;
-      console.log("1::", previousWeekOrder);
-      const difference = currentWeekRevenue - previousWeekRevenue;
-      const order_dif = currentWeekOrder - previousWeekOrder;
-
-      const order_per = ((order_dif / previousWeekOrder) * 100).toFixed(2);
-      const percentageChange = (
-        (difference / previousWeekRevenue) *
-        100
-      ).toFixed(2);
 
       const dailySaleData = async () => {
         try {
@@ -111,13 +129,13 @@ const getAnalysisDataService = async ({ userId }) => {
             {
               $match: {
                 createdAt: {
-                  $gte: currentWeek.start,
-                  $lte: currentWeek.end,
+                  $gte: start,
+                  $lte: end,
                 },
               },
             },
             {
-              $unwind: "$order_products", // Tách các phần tử trong order_products
+              $unwind: "$order_products",
             },
             {
               $group: {
@@ -129,14 +147,12 @@ const getAnalysisDataService = async ({ userId }) => {
               },
             },
             {
-              $sort: { _id: 1 }, // Sắp xếp theo ngày (tùy chọn)
+              $sort: { _id: 1 },
             },
           ]);
 
-          // Tạo mảng ngày đầy đủ
-          const dateArray = getDatesInRange(currentWeek.start, currentWeek.end);
+          const dateArray = getDatesInRange(start, end);
 
-          // Kết hợp dữ liệu daily với mảng ngày
           return dateArray.map((date) => {
             const foundData = daily.find((item) => item._id === date);
             return {
@@ -150,27 +166,31 @@ const getAnalysisDataService = async ({ userId }) => {
           return [];
         }
       };
-      const total_order = await Order.countDocuments({});
+
+      const total_order = await Order.countDocuments({
+        createdAt: {
+          $gte: start,
+          $lte: end
+        }
+      });
+
       return {
         daily: await dailySaleData(),
-        weekly,
-        current_week_revenue: currentWeekRevenue,
-        previous_week_revenue: previousWeekRevenue,
-        current_week_order: currentWeekOrder,
-        previous_week_order: previousWeekOrder,
-        order_per: parseFloat(order_per),
-        order_dif,
-        difference,
-        percentage_change: parseFloat(percentageChange),
-        current_week: { start: currentWeek.start, end: currentWeek.end },
-        previous_week: { start: previousWeek.start, end: previousWeek.end },
-        total_order,
+        revenue: revenue[0]?.revenue || 0,
+        total_order: revenue[0]?.total_order || 0,
+        total_order_count: total_order,
+        date_range: {
+          start,
+          end
+        }
       };
     })();
-    const [orderData, weeklyRevenue] = await Promise.all([
+
+    const [orderData, revenueReport] = await Promise.all([
       orderDataPromise,
-      weeklyRevenueData,
+      revenueData,
     ]);
+
     const resultOrder = orderData.reduce((order, item) => {
       order[item._id] = item.count;
       return order;
@@ -178,7 +198,7 @@ const getAnalysisDataService = async ({ userId }) => {
 
     return {
       order: resultOrder,
-      revenue_report: weeklyRevenue,
+      revenue_report: revenueReport,
     };
   } catch (error) {
     console.error("Error fetching analysis data:", error);
@@ -186,6 +206,133 @@ const getAnalysisDataService = async ({ userId }) => {
   }
 };
 
+const deleteFile = (filePath) => {
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`File ${filePath} đã được xóa thành công`);
+    }
+  } catch (error) {
+    console.error(`Lỗi khi xóa file ${filePath}:`, error);
+  }
+};
+
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const path = require('path');
+const fs = require('fs');
+
+const exportRevenueToCSVService = async ({ userId, type = 'today', startDate, endDate }) => {
+  try {
+    const { revenue_report } = await getAnalysisDataService({ userId, type, startDate, endDate });
+    const { daily, revenue, total_order, total_order_count, date_range } = revenue_report;
+
+    // Lấy dữ liệu lượt xem
+    const pageViews = await PageView.find({
+      lastUpdated: {
+        $gte: date_range.start,
+        $lte: date_range.end
+      }
+    });
+
+    // Lấy dữ liệu đơn hàng hủy
+    const cancelledOrders = await Order.countDocuments({
+      order_userId: new Types.ObjectId(userId),
+      order_status: "cancelled",
+      createdAt: {
+        $gte: date_range.start,
+        $lte: date_range.end
+      }
+    });
+
+    // Tạo tên file với timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `revenue-report-${timestamp}.csv`;
+    const filePath = path.join(__dirname, '../../public/exports', filename);
+
+    // Đảm bảo thư mục tồn tại
+    if (!fs.existsSync(path.dirname(filePath))) {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    }
+
+    // const stream = fs.createWriteStream(filePath, { encoding: 'utf8' });
+    // stream.write('\uFEFF');
+    // stream.end();
+    // Tạo CSV writer
+    const csvWriter = createCsvWriter({
+      path: filePath,
+      header: [
+        { id: 'date', title: 'Thời gian' },
+        { id: 'revenue', title: 'Doanh số' },
+        { id: 'order', title: 'Đơn hàng' },
+        { id: 'totalRevenue', title: 'Doanh thu' },
+        { id: 'views', title: 'Lượt xem' },
+        { id: 'avgOrderValue', title: 'Giá trị hàng trung bình' },
+        { id: 'cancelledOrders', title: 'Đơn hàng hủy' }
+      ],
+      // append: true
+    });
+
+    // Chuẩn bị dữ liệu cho CSV
+    const records = await Promise.all(daily.map(async (item) => {
+      const views = pageViews.find(pv => pv.lastUpdated.toISOString().split('T')[0] === item.date)?.views || 0;
+      const avgOrderValue = item.order > 0 ? (item.revenue / item.order) : 0;
+      
+      const cancelledCount = await Order.countDocuments({
+        order_userId: new Types.ObjectId(userId),
+        order_status: "cancelled",
+        createdAt: {
+          $gte: new Date(item.date),
+          $lt: new Date(new Date(item.date).getTime() + 24 * 60 * 60 * 1000)
+        }
+      });
+
+      return {
+        date: item.date,
+        revenue: item.revenue,
+        order: item.order,
+        totalRevenue: item.revenue,
+        views: views,
+        avgOrderValue: avgOrderValue.toFixed(2),
+        cancelledOrders: cancelledCount
+      };
+    }));
+
+    // Thêm dòng tổng kết
+    const totalViews = pageViews.reduce((sum, pv) => sum + pv.views, 0);
+    const avgOrderValue = total_order_count > 0 ? (revenue / total_order_count) : 0;
+    
+    // Thêm BOM vào đầu file
+    // fs.writeFileSync(filePath, '\uFEFF', { encoding: 'utf8' });
+    
+    records.push({
+      date: 'Tổng cộng',
+      revenue: revenue,
+      order: total_order_count,
+      totalRevenue: revenue,
+      views: totalViews,
+      avgOrderValue: avgOrderValue.toFixed(2),
+      cancelledOrders: cancelledOrders
+    });
+
+    // Ghi dữ liệu vào file CSV
+    await csvWriter.writeRecords(records);
+   const fileContent = fs.readFileSync(filePath, { encoding: 'utf8' });
+   fs.writeFileSync(filePath, '\uFEFF' + fileContent, { encoding: 'utf8' });
+    return {
+      filename,
+      path: `/exports/${filename}`,
+      fullPath: filePath,
+      deleteFile: () => deleteFile(filePath)
+    };
+  } catch (error) {
+    console.error("Error exporting revenue to CSV:", error);
+    throw new Error("Failed to export revenue data to CSV");
+  }
+};
+
 module.exports = {
   getAnalysisDataService,
+  exportRevenueToCSVService,
+  deleteFile
 };

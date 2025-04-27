@@ -54,7 +54,8 @@ const AttributeItem = ({ attr, control, name, onChange }) => (
               field.onChange(value);
               onChange?.({
                 id: attr.attribute_id,
-                value: value
+                value: value,
+                display_name: attr.children.find(item => item.value_id === value)?.display_name || ''
               });
             }}
           >

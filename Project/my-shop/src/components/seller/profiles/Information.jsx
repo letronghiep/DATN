@@ -113,7 +113,6 @@ export default function Information({ userId }) {
     } else {
       dataUpdateUser.usr_password = data.password;
       const response = await createUser(dataUpdateUser);
-      console.log(response);
       if (response?.data && response.data.status === 201) {
         notification.success({
           message: "Tạo người dùng thành công",

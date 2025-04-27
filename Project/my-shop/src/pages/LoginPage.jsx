@@ -10,7 +10,6 @@ function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
-  console.log(location);
   const redirectTo = new URLSearchParams(location.search).get("redirectTo");
   const onSubmit = async (data) => {
     try {
@@ -19,7 +18,6 @@ function LoginPage() {
       if (user) {
         const navigateTo = location.search;
         if (navigateTo) {
-          console.log(redirectTo);
           // const redirectTo = decodeURIComponent(navigateTo.split("=")[1]);
           navigate(redirectTo, { replace: true });
         } else {

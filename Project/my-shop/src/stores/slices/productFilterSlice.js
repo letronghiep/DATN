@@ -17,8 +17,8 @@ const productFilterSlice = createSlice({
   reducers: {
     toggleCategory: (state, action) => {
       const product_category = action.payload;
-      if (state.product_category.includes(product_category)) {
-        state.product_category = state.product_category.filter((c) => c !== product_category);
+      if (state.product_category.includes(parseInt(product_category))) {
+        state.product_category = state.product_category.filter((c) => c !== parseInt(product_category));
       } else {
         state.product_category.push(parseInt(product_category));
       }

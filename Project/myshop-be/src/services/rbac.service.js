@@ -136,7 +136,6 @@ const getListRole = async ({ userId, limit = 30, skip = 0, search = "" }) => {
 const getRoleService = async ({ id }) => {
   try {
     // check role exists
-    console.log(id)
     const foundRole = await Role.findById({
       _id: id,
     }).lean();

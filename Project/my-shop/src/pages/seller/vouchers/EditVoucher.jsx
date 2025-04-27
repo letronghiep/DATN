@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetDiscountByIdQuery,
   useUpdateVoucherMutation,
@@ -12,6 +12,7 @@ function EditVoucher() {
     criteriaMode: "all",
   });
   const [updateVoucher, { isLoading: isCreating }] = useUpdateVoucherMutation();
+  const navigate = useNavigate();
   const onSubmit = async (data) => {
     try {
       const result_data = {
@@ -30,9 +31,13 @@ function EditVoucher() {
           showProgress: true,
           placement: "top",
           onClose: () => {
-            // navigate("/login");
-            reset();
-            window.location.reload();
+            const redirect = new URLSearchParams(window.location.search).get("redirect");
+            if (redirect) {
+              const path = redirect.replace(/^https?:\/\/[^/]+/, '');
+              navigate(path);
+            } else {
+              navigate("/seller");
+            }
           },
         });
       }

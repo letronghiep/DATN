@@ -72,7 +72,6 @@ function CommentPopup({ openPopup, setOpenPopup, productId }) {
     setValue(value);
   };
   const handleCancel = () => {
-    console.log("Clicked cancel button");
     setOpenPopup(false);
   };
   // upload Image

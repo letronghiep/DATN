@@ -20,7 +20,8 @@ import vouchersApi from "../apis/vouchersApi";
 import productsApi from "../apis/productsApi";
 import cartApi from "../apis/cartApis";
 import ordersApi from "../apis/ordersApi";
-
+import chatApi from "../apis/chatApis";
+import flashsaleApi from "../apis/flashsaleApis";
 const persistConfig = {
   key: "root",
   storage,
@@ -48,7 +49,9 @@ export const store = configureStore({
       .concat(vouchersApi.middleware)
       .concat(productsApi.middleware)
       .concat(cartApi.middleware)
-      .concat(ordersApi.middleware),
+      .concat(ordersApi.middleware)
+      .concat(chatApi.middleware)
+      .concat(flashsaleApi.middleware),
   // middleware: (getDefaultMiddleware) =>
   //   getDefaultMiddleware()
   //     .concat(categoriesApi.middleware)

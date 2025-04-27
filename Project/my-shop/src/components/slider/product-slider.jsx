@@ -7,7 +7,6 @@ import { modifyImageDimensions, validateFormMoney } from "../../helpers";
 
 function ProductSlide({ products, title, href }) {
   const user = useSelector((state) => state.user.user);
-  console.log({ user });
   const scrollRef = useRef(null);
   const navigate = useNavigate();
   const scroll = (direction) => {
@@ -41,14 +40,15 @@ function ProductSlide({ products, title, href }) {
               </button>
               <div
                 ref={scrollRef}
-                className="flex gap-4 overflow-x-hidden scroll-smooth no-scrollbar"
+                className="grid grid-cols-12 gap-4 overflow-x-hidden scroll-smooth no-scrollbar"
               >
                 {products.map((product) => (
                   <Card
                     hoverable
                     key={product._id}
-                    className="relative text-center border shadow-md min-w-[200px] cursor-pointer group"
+                    className="col-span-3 relative text-center border shadow-md min-w-[200px] cursor-pointer group"
                     onClick={() => navigate(`/${product.product_slug}`)}
+                    
                   >
                     <img
                       src={modifyImageDimensions(
@@ -59,7 +59,7 @@ function ProductSlide({ products, title, href }) {
                       className="object-cover"
                       alt="product"
                     />
-                    <p className="text-base text-essential-800 ease-linear text-ellipsis overflow-hidden font-medium mt-3">
+                    <p className="text-base line-clamp-2 text-essential-800 ease-linear text-ellipsis overflow-hidden font-medium mt-3">
                       {product.product_name}
                     </p>
                     <p className="text-[#7C3FFF] font-semibold text-lg mt-2 mb-2">

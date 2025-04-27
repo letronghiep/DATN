@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import SelectCustom from "./Select";
 
-function DateSelect({ dataDate, onApply }) {
+function DateSelect({ dataDate, onApply, disabled }) {
   const { control, watch, setValue } = useForm({
     defaultValues: {
       day: "",
@@ -12,8 +12,7 @@ function DateSelect({ dataDate, onApply }) {
       year: "",
     },
     criteriaMode: "all",
-  }, 
-);
+  });
 
   // Generate year data
   const getYear = () => {
@@ -61,6 +60,7 @@ function DateSelect({ dataDate, onApply }) {
         valueField="label"
         keyField="id"
         placeholder="Ngày"
+        disabled={disabled}
       />
       <SelectCustom
         name="month"
@@ -69,6 +69,7 @@ function DateSelect({ dataDate, onApply }) {
         valueField="label"
         keyField="id"
         placeholder="Tháng"
+        disabled={disabled}
       />
       <SelectCustom
         name="year"
@@ -77,6 +78,7 @@ function DateSelect({ dataDate, onApply }) {
         valueField="label"
         keyField="id"
         placeholder="Năm"
+        disabled={disabled}
       />
     </div>
   );

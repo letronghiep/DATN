@@ -5,7 +5,7 @@ import {
   useGetCategoriesQuery,
 } from "../../../apis/categoriesApi";
 import CategoryForm from "../../../components/form/category-form";
-
+import { useNavigate } from "react-router-dom";
 function CreateCategory() {
   const { handleSubmit, setValue, control, reset } = useForm({
     criteriaMode: "all",
@@ -13,6 +13,7 @@ function CreateCategory() {
   const { data: categories, error, isLoading } = useGetCategoriesQuery();
   const [createMenuItem, { isLoading: isCreating, isError }] =
     useCreateCategoryMutation();
+  const navigate = useNavigate();
   const onSubmit = async (data) => {
     try {
       const res = await createMenuItem(data).unwrap();
@@ -22,7 +23,7 @@ function CreateCategory() {
           showProgress: true,
           placement: "top",
           onClose: () => {
-            // navigate("/login");
+            navigate("/seller/categories");
             reset();
             window.location.reload();
           },

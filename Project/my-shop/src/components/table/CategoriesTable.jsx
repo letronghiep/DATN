@@ -1,9 +1,9 @@
-import { Button, Modal, notification, Table, Tag } from "antd";
+import { Button, Flex, Modal, notification, Table, Tag } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useDeleteCategoryMutation } from "../../apis/categoriesApi";
 import { useState } from "react";
 
-const Categories = ({ data }) => {
+const Categories = ({ data, pageSize, setPageSize }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tableId, setTableId] = useState();
@@ -60,9 +60,12 @@ const Categories = ({ data }) => {
       dataIndex: "category_parentId",
       key: "category_parentId",
       // render: (order) => <a>{order.paymentMethod}</a>,
-      render: (category) =>
-        parseInt(category) > 0 && (
-          <Link to={`/seller/category/:${category}`}>{category}</Link>
+      render: (categories) =>
+      (categories?.length) > 0 && (
+        <Flex>
+            <Link to={`/seller/category/${categories[0]}`}>{categories.join(" - ")}</Link>
+        
+        </Flex>
         ),
     },
     {
@@ -131,7 +134,17 @@ const Categories = ({ data }) => {
         loading={isLoading}
         columns={columns}
         dataSource={data?.data}
-        pagination={true}
+        pagination={{
+          pageSize: pageSize,
+          total: data?.totalRows,
+          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} danh mục`,
+          showSizeChanger: true,
+          pageSizeOptions: ['5', '10', '20', '50'],
+          onChange: (page, pageSize) => {
+            setPageSize(pageSize);
+            console.log(pageSize);
+          },
+        }}
       />
       <Modal
         title="Xác nhận xóa"

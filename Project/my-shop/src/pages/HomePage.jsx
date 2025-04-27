@@ -56,14 +56,20 @@ function HomePage() {
         title="Sản phẩm mới nhất"
       />
       {/* Category */}
-      <CategorySlide categories={categories} title="Danh mục sản phẩm" />
+      <CategorySlide
+        categories={categories.filter(
+          (category) =>
+            category?.category_parentId === null ||
+            category?.category_parentId?.length === 0
+        )}
+        title="Danh mục sản phẩm"
+      />
       {/* End Category */}
       {/* Best seller */}
       <BestSeller
         data={homepage?.metadata.bestSeller}
         title="Bán chạy nhất trong tuần"
       />
-
     </div>
   );
 }

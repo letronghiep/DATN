@@ -6,11 +6,9 @@ import { getProductData } from "../../../services/product";
 import ProductForm from "./ProductForm";
 
 function ProductEditPage() {
-  // console.log(params);
   const { productId } = useParams();
   const [product, setProduct] = useState();
   const [loading, setLoading] = useState(true);
-  // const { handleSubmit } = useForm();
   const { Title } = Typography;
   useEffect(() => {
     async function fetchProduct() {
@@ -113,7 +111,6 @@ function ProductEditPage() {
     // }
   };
   if (loading && !product) return <Loading3QuartersOutlined />;
-  console.log(product);
   return (
     <div className="w-[90%] relative">
       <ProductForm

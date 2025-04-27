@@ -7,7 +7,6 @@ const { paginate } = require("../../helpers/paginate");
 const getListUser = async ({ limit, sort, page, filter }) => {
   const skip = (page - 1) * limit;
   const sortBy = sort === "ctime" ? { _id: -1 } : { _id: 1 };
-  console.log(filter);
   const users = await paginate({
     model: User,
     filter,
@@ -25,7 +24,6 @@ const getDetailUser = async ({ user_id }) => {
   return _.omit(foundUser, ["__v", "createdAt", "updatedAt"]);
 };
 const findOneUser = async (filter) => {
-  console.log(filter);
   return await User.findOne(filter);
 };
 const getAdmin = async () => {

@@ -11,6 +11,8 @@ import productsApi from "../apis/productsApi";
 import productFilterReducer from "./slices/productFilterSlice";
 import cartApi from "../apis/cartApis";
 import ordersApi from "../apis/ordersApi";
+import chatApi from "../apis/chatApis";
+import flashsaleApi from "../apis/flashsaleApis";
 // import dataReducer from "./data/data.reducer";
 // import useSpecModalReducer from "../hooks/useSpecModal";
 // import useLoginReducer from "../hooks/useLoginModal";
@@ -31,5 +33,7 @@ export const rootReducer = combineReducers({
   [productsApi.reducerPath]: productsApi.reducer,
   [cartApi.reducerPath]: cartApi.reducer,
   [ordersApi.reducerPath]: ordersApi.reducer,
+  [chatApi.reducerPath]: chatApi.reducer,
+  [flashsaleApi.reducerPath]: flashsaleApi.reducer,
   cart: {},
 });

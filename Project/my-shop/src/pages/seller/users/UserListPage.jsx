@@ -7,15 +7,31 @@ import {
   Spin,
   Typography,
 } from "antd";
-import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useGetUsersQuery } from "../../../apis/usersApi";
 import UserTable from "../../../components/table/UserTable";
+import { useEffect, useState } from "react";
+
 function UserListPage() {
   var { Title } = Typography;
   const [searchParams, setSearchParams] = useSearchParams("");
   const [keySearch, setKeySearch] = useState("");
-  const { data: users, isLoading } = useGetUsersQuery({
+  const [pageSize, setPageSize] = useState(10);
+  useEffect(() => {
+    const limit = searchParams.get("limit");
+    if (limit) {
+      setPageSize(parseInt(limit));
+      const params = new URLSearchParams(searchParams);
+      params.set("limit", pageSize);
+      setSearchParams(params);
+    }
+  }, [searchParams, pageSize, setPageSize, setSearchParams]);
+  // const { Search } = Input;
+  // const [categories, setCategories] = useState();
+  const {
+    data: users,
+    isLoading,
+  } = useGetUsersQuery({
     q: searchParams.get("q") || "",
     usr_status: searchParams.get("usr_status") || "all",
   });
@@ -75,15 +91,15 @@ function UserListPage() {
             fontWeight: "600",
           }}
         >
-          <div>Đã khoá</div>
+          <div>Đã vô hiệu hóa</div>
         </div>
       ),
-      value: "block",
+      value: "inactive",
     },
   ];
   const handleChangeDataProduct = (value) => {
     const params = new URLSearchParams(searchParams);
-    params.set(`category_status`, value);
+    params.set(`usr_status`, value);
     setSearchParams(params);
   };
   const onSearch = () => {
@@ -147,7 +163,7 @@ function UserListPage() {
         <Button type="default">Đặt lại</Button>
       </Flex>
       {/* List Product */}
-      <UserTable data={users?.metadata || []} isLoading={isLoading} />
+      <UserTable data={users?.metadata || []} pageSize={pageSize} setPageSize={setPageSize} />
     </Flex>
   );
 }

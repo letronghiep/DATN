@@ -1,7 +1,7 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { Cascader, Image, Typography, Upload } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, FormProvider, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import "react-quill/dist/quill.snow.css";
 import { apiOrigin } from "~/constants";
 import { useGetCategoriesQuery } from "../../../apis/categoriesApi";
@@ -22,19 +22,8 @@ function ProductForm({
   product,
 }) {
   const { Title } = Typography;
-  // const methods = useForm({
-  //   criteriaMode: "all",
-  //   // defaultValues: {
-  //   //   variations: [],
-  //   //   sku_list: [],
-  //   // },
-  // });
   const { handleSubmit, reset, control, watch, setValue, getValues } = useForm({
     criteriaMode: "all",
-    // defaultValues: {
-    //   variations: [],
-    //   sku_list: [],
-    // },
   });
 
   // State management
@@ -43,12 +32,11 @@ function ProductForm({
   const [fileList, setFileList] = useState([]);
   const [images, setImages] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState([]);
   const [brands, setBrands] = useState();
   const [attributes, setAttributes] = useState();
   const [variations, setVariations] = useState();
   const [isDraft, setIsDraft] = useState(false);
-
+  const [selectedCategoryId, setSelectedCategoryId] = useState();
   const getBase64 = useCallback(
     (file) =>
       new Promise((resolve, reject) => {
@@ -78,7 +66,9 @@ function ProductForm({
     setImages(newImages);
     setFileList(newFileList);
   }, []);
-
+  const handleChangeCategory = (value) => {
+    setSelectedCategoryId(value[value.length - 1]);
+  };
   const handleCancel = useCallback(() => {
     setImages([]);
     setFileList([]);
@@ -103,18 +93,25 @@ function ProductForm({
   }, [categoriesData]);
   useEffect(() => {
     async function getData() {
-      const [brandData, attributeData, variationData] = await Promise.all([
-        getBrand(100047),
-        getAttributes(100047),
-        getVariations(100047),
-      ]);
-      setBrands(brandData.metadata);
-      setAttributes(attributeData.metadata);
-      setVariations(variationData.metadata[0].tier_variation_list);
+      if (selectedCategoryId) {
+        const [attributeData, variationData] = await Promise.all([
+          getAttributes(selectedCategoryId),
+          getVariations(selectedCategoryId),
+        ]);
+
+        setAttributes(attributeData.metadata);
+        setVariations(variationData?.metadata[0].tier_variation_list);
+      }
     }
     getData();
-  }, []);
-  console.log(attributes);
+  }, [selectedCategoryId]);
+  useEffect(() => {
+    async function getBrandData() {
+      const [brandData] = await Promise.all([getBrand(100047)]);
+      setBrands(brandData.metadata);
+    }
+    getBrandData();
+  }, [selectedCategoryId]);
   const setValueofFormData = useCallback(() => {
     if (!product) return;
 
@@ -123,13 +120,13 @@ function ProductForm({
       options: variation.options,
       images: variation.images,
     }));
-
-    // const attributes = product.product_attributes.map((attribute) => ({
-    //   [`${attribute.attribute_id}`]: attribute.value,
-    // }));
-
     setValue("variations", variations);
     setValue("product_category", product?.product_category ?? []);
+    if (product?.product_category && product.product_category.length > 0) {
+      setSelectedCategoryId(
+        product.product_category[product.product_category.length - 1]
+      );
+    }
     setValue("product_name", product?.product_name ?? "");
     setValue("product_description", product?.product_description ?? "");
     setValue("product_images", product?.product_images ?? []);
@@ -155,8 +152,6 @@ function ProductForm({
 
   const onSubmitHandler = useCallback(
     async (data) => {
-      // console.log("data");
-      console.log(data);
       const formattedData = {
         ...data,
         product_variations: data.variations.map((variation) => ({
@@ -186,7 +181,7 @@ function ProductForm({
 
     // Bước 2: Xây dựng cây danh mục
     categories.forEach((category) => {
-      if (category.category_parentId.includes(0)) {
+      if (category.category_parentId.length === 0) {
         rootCategories.push(categoryMap.get(category.category_id));
       } else {
         category.category_parentId.forEach((parentId) => {
@@ -203,11 +198,11 @@ function ProductForm({
   const options = useMemo(() => {
     return transformCategories(categories);
   }, [categories]);
+  console.log(options);
   return (
-    // <FormProvider {...methods}>
-    <form onSubmit={handleSubmit(onSubmitHandler)} className="w-full">
-      <div className="border-b border-gray-900/10 pb-12">
-        <Title level={2}>Thông tin cơ bản</Title>
+    <form onSubmit={handleSubmit(onSubmitHandler)} className="w-full bg-white">
+      <div className="border-b border-gray-900/10 p-6">
+        <Title level={3}>Thông tin cơ bản</Title>
         <table className="w-full">
           <tbody>
             <tr className="mt-6 flex gap-x-4">
@@ -286,18 +281,15 @@ function ProductForm({
                     <Cascader
                       style={{ width: "100%" }}
                       options={options}
-                      {...field}
+                      value={field.value}
+                      onChange={(value) => {
+                        field.onChange(value); // update vào form
+                        handleChangeCategory(value); // xử lý riêng thêm nếu cần
+                      }}
                     />
                   )}
                 />
               </td>
-              {/* <Cascader
-                  value={selectedCategory}
-                  options={categories}
-                  loadData={loadData}
-                  onChange={handleCategoryChange}
-                  changeOnSelect
-                /> */}
             </tr>
             <tr className="my-6 flex gap-x-4">
               <td colSpan={2} className="flex justify-end flex-1">
@@ -315,11 +307,11 @@ function ProductForm({
         </table>
       </div>
 
-      <div className="border-b border-gray-900/10 pb-12">
-        <Title level={2}>Thông tin chi tiết</Title>
+      <div className="border-b border-gray-900/10 p-6">
+        <Title level={3}>Thông tin chi tiết</Title>
         <div className="mt-10 space-y-10">
           <Attribute
-            attributes={attributes && attributes[0].attribute_list}
+            attributes={attributes && attributes[0]?.attribute_list}
             control={control}
             brandName="product_brand"
             brands={brands && brands.brand_list}
@@ -327,8 +319,8 @@ function ProductForm({
           />
         </div>
       </div>
-      <div className="border-b border-gray-900/10 pb-12">
-        <Title level={2}>Thông tin bán hàng</Title>
+      <div className="border-b border-gray-900/10 p-6">
+        <Title level={3}>Thông tin bán hàng</Title>
         <div className="mt-10 space-y-10">
           <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <div className="flex items-center gap-x-4 sm:col-span-3">
@@ -349,8 +341,8 @@ function ProductForm({
         </div>
       </div>
 
-      <div className="border-b border-gray-900/10 pb-12">
-        <Title level={2}>Phân loại hàng</Title>
+      <div className="border-b border-gray-900/10 p-6">
+        <Title level={3}>Phân loại hàng</Title>
         <div className="mt-10 space-y-10">
           <VariationForm
             variations={variations}
@@ -379,7 +371,6 @@ function ProductForm({
         onCancel={handleCancel}
       />
     </form>
-    // </FormProvider>
   );
 }
 

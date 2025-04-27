@@ -31,20 +31,19 @@ const pushNotifyToSystem = async ({
   });
   return newNotify;
 };
-const listNotifyByUserService = async ({ userId, isAll }) => {
+const listNotifyByUserService = async ({ userId, isAll, isRead }) => {
   let match;
-  if (isAll == true) {
+  if (isAll == "true") {
     match = {
       notify_receiverId: new Types.ObjectId(userId),
     };
   } else {
     match = {
       notify_receiverId: new Types.ObjectId(userId),
-      notify_isRead: false,
+      notify_isRead: isRead,
     };
   }
-
-  return await Notification.aggregate([
+  const result = await Notification.aggregate([
     {
       $match: match,
     },
@@ -60,7 +59,9 @@ const listNotifyByUserService = async ({ userId, isAll }) => {
         count_not_read: 1,
       },
     },
-  ]);
+  ]).sort({ createdAt: -1 });
+  return result;
+  
 };
 const updateReadNotifyService = async ({ notify_id, receiverId }) => {
   const notification = await Notification.findOne({

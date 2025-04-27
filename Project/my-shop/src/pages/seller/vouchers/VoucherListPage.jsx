@@ -7,7 +7,7 @@ import {
   Spin,
   Typography,
 } from "antd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useGetDiscountsQuery } from "../../../apis/vouchersApi";
 import DiscountTable from "../../../components/table/DiscountTable";
@@ -16,9 +16,22 @@ function VoucherListPage() {
   var { Title } = Typography;
   const [searchParams, setSearchParams] = useSearchParams("");
   const [keySearch, setKeySearch] = useState("");
+  const [pageSize, setPageSize] = useState(10);
+  
+  useEffect(() => {
+    const limit = searchParams.get("limit");
+    if (limit) {
+      setPageSize(parseInt(limit));
+      const params = new URLSearchParams(searchParams);
+      params.set("limit", pageSize);
+      setSearchParams(params);
+    }
+  }, [searchParams, pageSize, setPageSize, setSearchParams]);
+
   const { data: discounts, isLoading } = useGetDiscountsQuery({
     q: searchParams.get("q") || "",
     discount_status: searchParams.get("discount_status") || "all",
+    limit: pageSize,
   });
   const options = [
     {
@@ -149,7 +162,11 @@ function VoucherListPage() {
       </Flex>
       {/* List Product */}
       {/* <CategoriesTable data={categories?.metadata || []} /> */}
-      <DiscountTable data={discounts?.metadata.data || []} />
+      <DiscountTable 
+        data={discounts?.metadata || []} 
+        pageSize={pageSize}
+        setPageSize={setPageSize}
+      />
     </Flex>
   );
 }

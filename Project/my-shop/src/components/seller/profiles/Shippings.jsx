@@ -56,39 +56,6 @@ function Shippings({
     setOpenModalDefault(!openModalDefault);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  // const handleDeleteShipping = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const res = await removeShippingService(shippingId);
-  //     if (res.status === 200) {
-  //       setRefresh(!refresh);
-  //       setOpenModalDelete(false);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   } finally {
-  //     setLoading(false);
-  //     // setRefresh(false);
-  //   }
-  // };
-
-  // const handleDefaultShippingChange = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const res = await updateDefaultShipping(shippingId);
-  //     if (res.status === 200) {
-  //       setOpenModalDefault(false);
-  //       setIsDefault(true);
-  //       setRefresh(!refresh);
-  //       setLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   } finally {
-  //     setLoading(false);
-  //     // setRefresh(false);
-  //   }
-  // };
   const {
     register,
     control,

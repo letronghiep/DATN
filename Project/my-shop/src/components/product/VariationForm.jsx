@@ -1,10 +1,7 @@
 import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Flex, Radio, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Controller,
-  useFieldArray
-} from "react-hook-form";
+import { Controller, useFieldArray } from "react-hook-form";
 
 const { Option } = Select;
 
@@ -49,7 +46,7 @@ const VariationForm = ({
 
       setValue(`variations.${index}.name`, value);
       setValue(`variations.${index}.options`, []);
-      
+
       setSelectedGroups((prev) => ({
         ...prev,
         [index]: undefined,
@@ -62,7 +59,7 @@ const VariationForm = ({
 
   const getVariationOptions = useCallback(
     (field, fieldName, index) => {
-      console.log(field);
+      // console.log(field);
       const variation = variations?.find((v) => v.display_name === fieldName);
       if (!variation) return [];
 
@@ -104,6 +101,14 @@ const VariationForm = ({
 
   return (
     <div>
+      <Button
+        type="default"
+        className="border-gray-600 w-fit my-4"
+        onClick={handleAddVariation}
+        icon={<PlusOutlined />}
+      >
+        Thêm phân loại hàng
+      </Button>
       <Flex align="baseline" gap={20}>
         {fields.length > 0 && <p className="flex-1">Phân loại hàng:</p>}
         <div className="w-full flex-[2]">
@@ -193,7 +198,7 @@ const VariationForm = ({
                               (option) => (
                                 <Option
                                   key={option.value_id}
-                                  value={option.value_id.toString()}
+                                  value={option.value_name.toString()}
                                 >
                                   {option.value_name}
                                 </Option>
@@ -216,14 +221,6 @@ const VariationForm = ({
           ))}
         </div>
       </Flex>
-      <Button
-        type="dashed"
-        onClick={handleAddVariation}
-        block
-        icon={<PlusOutlined />}
-      >
-        Thêm phân loại hàng
-      </Button>
     </div>
   );
 };

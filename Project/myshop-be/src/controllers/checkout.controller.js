@@ -1,6 +1,6 @@
 "use strict";
 
-const { SuccessResponse } = require("../core/success.response");
+const { SuccessResponse, CREATED } = require("../core/success.response");
 const {
   checkoutReviewService,
   orderByUserService,
@@ -8,6 +8,10 @@ const {
   getDetailOrderService,
   updateStatusOrderService,
   cancelOrderService,
+  exportOrderToCSVService,
+  createCheckoutOnlineService,
+  callbackZaloPayService,
+  getOrderForAdminService
 } = require("../services/checkout.service");
 
 const checkoutReview = async (req, res, next) => {
@@ -33,16 +37,31 @@ const orderByUser = async (req, res, next) => {
     }),
   }).send(res);
 };
+// [admin]
+const getOrderForAdmin = async (req, res, next) => {
+  new SuccessResponse({
+    message: "get order for admin",
+    metadata: await getOrderForAdminService({
+      filter: req.query,
+      page: req.query.page,
+      limit: req.query.limit,
+    }),
+  }).send(res);
+};
 
+// [user]
 const getOrderByUser = async (req, res, next) => {
   new SuccessResponse({
     message: "get order by user",
     metadata: await getOrderByUserService({
       userId: req.user.userId,
       filter: req.query,
+      page: req.query.page,
+      limit: req.query.limit,
     }),
   }).send(res);
 };
+
 const getDetailOrderByUser = async (req, res, next) => {
   new SuccessResponse({
     message: "get order detail by user",
@@ -54,12 +73,13 @@ const getDetailOrderByUser = async (req, res, next) => {
 };
 // [Shop | admin]
 const updateStatusOrder = async (req, res, next) => {
+  const { userId } = req.user;
   new SuccessResponse({
     message: "update status order",
     metadata: await updateStatusOrderService({
-      userId: req.query.userId,
+      order_status: req.body.order_status,
+      userId: userId,
       orderId: req.query.order_id,
-      ...req.body,
     }),
   }).send(res);
 };
@@ -73,6 +93,44 @@ const cancelOrder = async (req, res, next) => {
     }),
   }).send(res);
 };
+
+const exportOrderToCSV = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const { order_status, startDate, endDate } = req.query;
+
+    const { filename, content } = await exportOrderToCSVService({
+      userId,
+      filter: { order_status, startDate, endDate }
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.send(content);
+  } catch (error) {
+    next(error);
+  }
+};
+const createCheckoutOnline = async (req, res, next) => {
+  new SuccessResponse({
+    message: "create checkout online",
+    metadata: await createCheckoutOnlineService({
+      userId: req.user.userId,
+      ...req.body,
+    }),
+  }).send(res);
+}
+const callbackZaloPay = async (req, res, next) => {
+    new CREATED({
+      message: "create checkout online",
+      metadata: await callbackZaloPayService({
+        // userId: req.user.userId,
+        data: req.body.data,
+        mac: req.body.mac,
+        ...req.body
+      }),
+    }).send(res);
+}
 module.exports = {
   checkoutReview,
   orderByUser,
@@ -80,4 +138,8 @@ module.exports = {
   getDetailOrderByUser,
   updateStatusOrder,
   cancelOrder,
+  exportOrderToCSV,
+  createCheckoutOnline,
+  callbackZaloPay,
+  getOrderForAdmin
 };

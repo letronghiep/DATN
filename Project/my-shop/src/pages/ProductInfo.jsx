@@ -146,7 +146,6 @@ function ProductInfo() {
       if (foundModel) setSku_id(foundModel.sku_id);
     }
   }, [selectedCombination, product]);
-  console.log(selectedCombination);
   //socket
   useEffect(() => {
     if (product) {
@@ -190,7 +189,7 @@ function ProductInfo() {
         shopId: product.product_shop,
         quantity: productQuantity,
         name: product.product_name,
-        price: product_price,
+        price: Number(product_price),
         image: product.product_thumb,
         size: selectedOptions["Size"],
         color: selectedOptions["Màu sắc"],
@@ -391,20 +390,21 @@ function ProductInfo() {
         <div>
           <table className="w-full">
             <tbody>
-              {Object.keys(product.product_attributes).map((key) => (
-                <tr key={key} className="mb-3 flex gap-x-4 py-2 px-2 text-base">
+              {product.product_attributes?.map((item, index) => (
+                <tr
+                  key={index}
+                  className="mb-3 flex gap-x-4 py-2 px-2 text-base"
+                >
                   <td
                     colSpan={4}
                     className="flex justify-start  items-center min-w-[120px] max-w-[240px]"
                   >
                     <p className="justify-start flex text-gray-600/70">
-                      {key}:
+                      {item.id}:
                     </p>
                   </td>
                   <td colSpan={2} className="flex items-center">
-                    <p className="justify-start flex">
-                      {product.product_attributes[key]}
-                    </p>
+                    <p className="justify-start flex">{item.value}</p>
                   </td>
                 </tr>
               ))}

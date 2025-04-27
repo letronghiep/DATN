@@ -16,6 +16,9 @@ const { default: slugify } = require("slugify");
 const { Types } = require("mongoose");
 const KeyStore = require("../models/keyToken.model");
 const JWT = require("jsonwebtoken");
+const { getIO } = require("../db/init.socket");
+const io = getIO();
+const { pushNotifyToSystem } = require("./notification.service");
 /**
  * create user [admin]
  * get list user [admin]
@@ -47,6 +50,7 @@ const createUserService = async ({
   usr_status,
 }) => {
   try {
+    let notify_content = "";
     const foundUser = await User.findOne({
       usr_id: usr_id,
     }).lean();
@@ -70,6 +74,22 @@ const createUserService = async ({
       usr_date_of_birth,
       usr_role,
       usr_status,
+    });
+    io.on('user:register', (user) => {
+      notify_content = `Người dùng <a>${newUser.usr_name}</a> vừa đăng ký tài khoản trên hệ thống `;
+    });
+    io.on('admin:create-user', (user) => {
+      notify_content = `Người quản trị vừa thêm người dùng <a>${newUser.usr_name}</a> vào hệ thống `;
+    });
+    await pushNotifyToSystem({
+      notify_content: notify_content,
+      notify_type: "USER-001",
+      senderId: newUser.usr_id,
+      options: {
+        // link:
+        // shorten Url or link product
+      },
+      receiverId: newUser.usr_id,
     });
     return newUser ? newUser : null;
   } catch (error) {
@@ -122,6 +142,17 @@ const updateUserService = async ({
       usr_status,
       updatedAt: new Date(),
     },
+  });
+  const notify_content = `Người quản trị vừa cập nhật thông tin người dùng <a>${usr_name}</a>`;
+  await pushNotifyToSystem({
+    notify_content: notify_content,
+    notify_type: "USER-002", 
+    senderId: usr_id,
+    options: {
+      // link:
+      // shorten Url or link product
+    },
+    receiverId: usr_id,
   });
   return data;
 };

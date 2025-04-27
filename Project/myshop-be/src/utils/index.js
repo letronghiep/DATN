@@ -39,6 +39,46 @@ function randomString() {
   }
   return result.toUpperCase();
 }
+function splitMessagesNatural(text) {
+  // 1. Cắt theo dấu xuống dòng hoặc xuống dòng + khoảng trắng
+  const roughSplits = text.split(/\n|\r/).map(line => line.trim()).filter(line => line.length > 0);
+
+  const messages = [];
+  let tempBuffer = '';
+
+  roughSplits.forEach(line => {
+    // Nếu dòng là tiêu đề mục (bắt đầu bằng **số.)
+    if (/^\*\*\d\./.test(line)) {
+      if (tempBuffer) {
+        messages.push(tempBuffer.trim());
+        tempBuffer = '';
+      }
+      messages.push(line.trim());
+    }
+    // Nếu dòng là câu hỏi hoặc bullet point (*)
+    else if (/^\*/.test(line)) {
+      if (tempBuffer) {
+        messages.push(tempBuffer.trim());
+        tempBuffer = '';
+      }
+      messages.push(line.trim());
+    }
+    // Nếu là dòng nội dung, cộng dồn cho đủ dài rồi mới gửi
+    else {
+      tempBuffer += ' ' + line;
+      if (tempBuffer.length > 150) { // Nếu buffer dài quá 150 ký tự thì cắt ra
+        messages.push(tempBuffer.trim());
+        tempBuffer = '';
+      }
+    }
+  });
+
+  if (tempBuffer) {
+    messages.push(tempBuffer.trim());
+  }
+
+  return messages;
+}
 module.exports = {
   getInfoData,
   getSelectData,
@@ -50,5 +90,6 @@ module.exports = {
   randomShippingId,
   randomString,
   randomFlashSaleId,
-  randomBannerId
+  randomBannerId,
+  splitMessagesNatural
 };

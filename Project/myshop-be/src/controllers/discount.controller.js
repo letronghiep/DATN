@@ -34,7 +34,6 @@ const getAllDiscountCodes = async (req, res, next) => {
 };
 
 const getDiscountAmount = async (req, res, next) => {
-  console.log({  res });
   new SuccessResponse({
     message: "discount amount",
     metadata: await getDiscountAmountService({

@@ -6,12 +6,13 @@ const {
   countNotificationService,
 } = require("../services/notification.service");
 const listNotifyByUser = async (req, res, next) => {
-  console.log(req.query);
   new SuccessResponse({
     message: "list listNotifyByUser",
     metadata: await listNotifyByUserService({
       userId: req.query.user_id,
       isAll: req.query.isAll,
+      isRead: req.query.isRead,
+
     }),
   }).send(res);
 };

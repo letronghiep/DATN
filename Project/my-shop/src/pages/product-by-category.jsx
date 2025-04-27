@@ -64,14 +64,16 @@ function ProductByCategory() {
             />
           ))}
       </div>
-      <Pagination
-        className="flex justify-center mt-4"
-        align="center"
-        current={currentPage}
-        onChange={handlePageChange}
-        total={totalRows}
-        pageSize={limit}
-      />
+      {(products && products.length > 0)&& (
+        <Pagination
+          className="flex justify-center mt-4"
+          align="center"
+          current={currentPage}
+          onChange={handlePageChange}
+          total={totalRows}
+          pageSize={limit}
+        />
+      )}
     </div>
   );
 }

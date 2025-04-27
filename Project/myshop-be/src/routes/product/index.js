@@ -23,6 +23,7 @@ const {
   increaseViewProduct,
   getArrivalsProduct,
   getHomePage,
+  getFavoriteProducts,
 } = require("../../controllers/product.controller");
 const { authentication } = require("../../middlewares/authentication");
 const { grantAccess } = require("../../middlewares/rbac.middleware");
@@ -34,11 +35,12 @@ router.get("/homepage", asyncHandler(getHomePage));
 router.get("/arrivals", asyncHandler(getArrivalsProduct));
 router.get("/search", asyncHandler(searchProduct));
 router.get("/seller", authentication, asyncHandler(getListProductByShop));
+router.get("/favorite", authentication, asyncHandler(getFavoriteProducts));
+router.get("/favorite/:product_id", asyncHandler(getCountFavorite));
 router.get("/:product_id", asyncHandler(getProductById));
 router.get("/info/:product_slug", asyncHandler(getInfoProduct));
 router.get("/sku/select_variant", asyncHandler(findOneSku));
 router.get("/related/:product_id", asyncHandler(getRelatedProducts));
-router.get("/favorite/:product_id", asyncHandler(getCountFavorite));
 // shop
 router.post(
   "/seller",

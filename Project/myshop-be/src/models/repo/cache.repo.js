@@ -60,7 +60,6 @@ const getAllCache = async ({ key }) => {
 };
 
 const clearCacheIO = async ({ key }) => {
-  console.log(key);
   if (!redisCache) {
     throw new Error("Redis has not been initialized");
   }
@@ -68,7 +67,6 @@ const clearCacheIO = async ({ key }) => {
     if (!key) return;
     const keys = await getCacheIO({ key: key });
     if (keys && keys.length > 0) {
-      console.log("aaa");
       await redisCache.del(keys);
     }
   } catch (error) {

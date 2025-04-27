@@ -1,8 +1,13 @@
 import {
   CloseOutlined,
   ContainerOutlined,
+  EuroOutlined,
   HomeOutlined,
   MenuOutlined,
+  PictureOutlined,
+  ProductOutlined,
+  UnorderedListOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { Col, Drawer, Menu, Space, theme } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -19,7 +24,7 @@ const items = [
   },
   {
     key: "2",
-    icon: <ContainerOutlined />,
+    icon: <UnorderedListOutlined />,
     label: `Quản lý đơn hàng`,
     children: [
       {
@@ -31,7 +36,7 @@ const items = [
   },
   {
     key: "4",
-    icon: <ContainerOutlined />,
+    icon: <MenuOutlined />,
     label: `Quản lý danh mục`,
     children: [
       {
@@ -48,7 +53,7 @@ const items = [
   },
   {
     key: "7",
-    icon: <ContainerOutlined />,
+    icon: <ProductOutlined />,
     label: `Quản lý sản phẩm`,
     children: [
       {
@@ -65,7 +70,7 @@ const items = [
   },
   {
     key: "10",
-    icon: <ContainerOutlined />,
+    icon: <UserOutlined />,
     label: `Quản lý người dùng`,
     children: [
       {
@@ -82,7 +87,7 @@ const items = [
   },
   {
     key: "13",
-    icon: <ContainerOutlined />,
+    icon: <EuroOutlined />,
     label: `Quản lý mã giảm giá/voucher`,
     children: [
       {
@@ -94,6 +99,40 @@ const items = [
         key: "15",
         label: <Link to="/seller/vouchers/create">Thêm voucher</Link>,
         title: "/seller/vouchers/create",
+      },
+    ],
+  },
+  {
+    key: "16",
+    icon: <PictureOutlined />,
+    label: `Quản lý banner`,
+    children: [
+      {
+        key: "17",
+        label: <Link to="/seller/banners">Danh sách banner</Link>,
+        title: "/seller/banners",
+      },
+      {
+        key: "18",
+        label: <Link to="/seller/banners/create">Thêm banner</Link>,
+        title: "/seller/banners/create",
+      },
+    ],
+  },
+  {
+    key: "19",
+    icon: <EuroOutlined />,
+    label: `Quản lý flash sale`,
+    children: [
+      {
+        key: "20",
+        label: <Link to="/seller/flashsale">Danh sách flash sale</Link>,
+        title: "/seller/flashsale",
+      },
+      {
+        key: "21",
+        label: <Link to="/seller/flashsale/create">Tạo flash sale</Link>,
+        title: "/seller/flashsale/create",
       },
     ],
   },

@@ -14,5 +14,5 @@ router.use(authentication);
 router.post("", asyncHandler(addToCart));
 router.patch("/update", asyncHandler(updateCart));
 router.get("", asyncHandler(getListUserCart));
-router.delete("", asyncHandler(deleteCart));
+router.delete("/:sku_id", asyncHandler(deleteCart));
 module.exports = router;

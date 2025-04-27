@@ -23,11 +23,7 @@ function Filter({ categories, handleFilter }) {
   useEffect(() => {
     if (category_id && categories.length) {
       const filtered = categories
-        .filter(
-          (category) =>
-            category.category_parentId.length === 1 &&
-            category.category_parentId[0] === 0
-        )
+        .filter((category) => category.category_parentId.length === 0)
         .map((category) => ({
           id: category.category_id,
           label: category.category_name,

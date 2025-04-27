@@ -108,7 +108,6 @@ export default function EditUser() {
       userId: userId,
       data: dataUpdateUser,
     });
-    console.log(response);
     if (response.data && response.data.status === 200) {
       notification.success({
         message: "Cập nhật thông tin thành công",

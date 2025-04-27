@@ -1,13 +1,15 @@
-"use strict";
-const express = require("express");
-const { asyncHandler } = require("../../helpers/asyncHandler");
-const { authentication } = require("../../middlewares/authentication");
-const {
-  createBanner,
-  getBanner,
-} = require("../../controllers/banner.controller");
+const express = require('express');
 const router = express.Router();
-// shop
-router.post("", authentication, asyncHandler(createBanner));
-router.get("/", asyncHandler(getBanner));
-module.exports = router;
+const bannerController = require('../../controllers/banner.controller');
+const { authentication } = require('../../middlewares/authentication');
+
+// Public routes
+router.get('/', bannerController.getBanners);
+router.get('/:bannerId', bannerController.getBannerById);
+
+// Protected routes (require authentication)
+router.post('/', authentication, bannerController.createBanner);
+router.put('/:bannerId', authentication, bannerController.updateBanner);
+router.delete('/:bannerId', authentication, bannerController.deleteBanner);
+
+module.exports = router; 

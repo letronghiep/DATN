@@ -58,20 +58,17 @@ const updateUserCartQuantity = async ({ userId, product }) => {
 // END REPO
 
 const addToCartService = async ({ userId, product }) => {
-  console.log(product);
   const { productId, quantity, sku_id } = product;
   try {
     // Tìm giỏ hàng của user
     const userCart = await Cart.findOne({
       cart_userId: new Types.ObjectId(userId),
     }).lean();
-    console.log(userCart);
 
     // Nếu chưa có giỏ hàng hoặc giỏ hàng trống, tạo mới
     if (!userCart || !userCart.cart_products.length) {
       return await createUserCart({ userId, product });
     }
-    console.log(userCart.cart_products);
     // Kiểm tra sản phẩm đã tồn tại trong giỏ hàng chưa
     const existingProduct = userCart.cart_products.find(
       (p) => p.sku_id?.toString() === sku_id.toString()
@@ -106,7 +103,6 @@ const addToCartService = async ({ userId, product }) => {
     ]
   */
 const updateCartService = async ({ userId, shop_order_ids }) => {
-  console.log(shop_order_ids);
   const { productId, quantity, old_quantity, sku_id } =
     shop_order_ids[0]?.item_products[0];
   // check product
@@ -124,6 +120,7 @@ const updateCartService = async ({ userId, shop_order_ids }) => {
     product: {
       productId,
       quantity: quantity - old_quantity,
+      sku_id,
     },
   });
 };
@@ -144,9 +141,39 @@ const deleteUserCartService = async ({ userId, sku_id }) => {
 };
 
 const getListUserCartService = async ({ userId }) => {
-  return await Cart.findOne({
+  const cartCount = await Cart.aggregate([
+    { $match: { cart_userId: new Types.ObjectId(userId) } },
+    { $unwind: "$cart_products" },
+    {
+      $group: {
+        _id: "$cart_products.productId",
+        quantity: { $sum: "$cart_products.quantity" },
+      },
+    },
+  ]);
+  const totalCart = await cartCount.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+  const amount = await Cart.aggregate([
+    { $match: { cart_userId: new Types.ObjectId(userId) } },
+    { $unwind: "$cart_products" },
+    {
+      $group: {
+        _id: "$cart_products.productId",
+        price: { $sum: "$cart_products.price" },
+      },
+    },
+  ])
+  const totalAmount = await amount.reduce((total, item) => total + Number(item.price), 0);
+  const carts = await Cart.findOne({
     cart_userId: new Types.ObjectId(userId),
   }).lean();
+  return {
+    totalCart,
+    carts,
+    totalAmount
+  };
 };
 
 module.exports = {

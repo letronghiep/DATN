@@ -61,13 +61,21 @@ var orderSchema = new Schema(
     order_status: {
       type: String,
       enum: [
-        "pending",
-        "processing",
-        "shipped",
-        "cancelled",
-        "delivering",
-        "refunded",
+        "pending", // Chờ xác nhận
+        "confirmed", // Đã xác nhận
+        "processing", // Đang xử lý
+        "packed", // Đã đóng gói
+        "delivering", // Đang giao hàng
+        "shipped", // Đã giao hàng
+        "completed", // Hoàn tất
+        "cancelled", // Đã hủy
+        "returned", // Trả hàng
+        "exchanged", // Đổi hàng
+        "refunded", // Đã hoàn tiền
+        "failed_delivery", // Giao hàng thất bại
+        "on_hold", // Đơn bị treo
       ],
+
       default: "pending",
     },
   },

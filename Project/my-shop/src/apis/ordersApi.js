@@ -26,15 +26,59 @@ export const ordersApi = createApi({
       invalidatesTags: ["checkout"],
     }),
     getOrders: builder.query({
-      query: () => ({
-        url: "/orders",
+      query: ({page, limit}) => ({
+        url: "/checkout?page=" + page + "&limit=" + limit,
         method: "GET",
       }),
+      providesTags: ["checkout"],
     }),
+    getOrderDetail: builder.query({
+      query: (order_id) => ({
+        url: "/checkout/" + order_id,
+        method: "GET",
+      }),
+      providesTags: ["checkout"],
+    }),
+    checkout: builder.mutation({
+      query: (data) => ({
+        url: "/checkout/create",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["checkout"],
+    }),
+    updateStatus: builder.mutation({
+      query: ({data, order_id}) => ({
+        url: "/checkout?order_id=" + order_id,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["checkout"],
+    }),
+    createCheckoutOnline: builder.mutation({
+      query: (data) => ({
+        url: "/checkout/payment",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["checkout"],
+    }),
+    getOrderForAdmin: builder.query({
+      query: ({page, limit}) => ({
+        url: "/checkout/admin?page=" + page + "&limit=" + limit,
+        method: "GET",
+      }),
+      providesTags: ["checkout"],
+    })
   }),
 });
 export const {
   useGetOrdersQuery,
   useReviewOrderMutation,
+  useCheckoutMutation,
+  useUpdateStatusMutation,
+  useCreateCheckoutOnlineMutation,
+  useGetOrderDetailQuery,
+  useGetOrderForAdminQuery
 } = ordersApi;
 export default ordersApi;

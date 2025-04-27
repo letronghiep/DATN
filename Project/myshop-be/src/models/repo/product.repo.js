@@ -36,7 +36,6 @@ async function findAllProduct({ limit, sort, page, filter, select }) {
     .lean();
 }
 const checkProductByServer = async ({ products }) => {
-  console.log({ products });
   return await Promise.all(
     products.map(async (product) => {
       const foundProduct = await getProductById({
@@ -62,6 +61,8 @@ const updateStatusProduct = async ({
   foundProduct.product_status = product_status;
   await Sku.updateMany({
     product_id: product_id,
+  }, {
+    sku_status: product_status,
   });
   return await Product.findByIdAndUpdate(product_id, foundProduct, {
     new: true,

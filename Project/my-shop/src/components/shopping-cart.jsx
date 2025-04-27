@@ -1,14 +1,14 @@
-import { Button, Card, Flex, InputNumber, Typography, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import "./shopping-cart.css";
+import { Button, Card, Flex, InputNumber, Typography, message } from "antd";
+import { useNavigate } from "react-router-dom";
 import {
-  useGetCartQuery,
-  useUpdateCartItemMutation,
-  useRemoveFromCartMutation,
   useCheckoutMutation,
   useDeleteCartMutation,
+  useGetCartQuery,
+  useUpdateCartItemMutation,
 } from "../apis/cartApis";
-import { useNavigate } from "react-router-dom";
+import "./shopping-cart.css";
+import { validateFormMoney } from "../helpers";
 
 const { Title, Text } = Typography;
 
@@ -20,14 +20,12 @@ function ShoppingCart({ onClose }) {
   const [deleteCart] = useDeleteCartMutation();
   const [checkout, { isLoading: isCheckingOut }] = useCheckoutMutation();
 
-  const cartItems = data?.metadata?.cart_products || [];
-  console.log({ data, cartItems });
-  const totalAmount = data?.metadata?.cart_count_product || 0;
-
+  const cartItems = data?.metadata?.carts?.cart_products || [];
+  const totalAmount = data?.metadata?.totalAmount || 0;
+  const totalCart = data?.metadata?.totalCart || 0;
   // Hàm cập nhật số lượng sản phẩm
   const handleQuantityChange = async (id, value) => {
     try {
-      console.log({ id });
       await updateCartItem({
         cartItemId: id,
         data: { ...value },
@@ -39,7 +37,6 @@ function ShoppingCart({ onClose }) {
 
   // Hàm tăng số lượng
   const handleIncrement = async (id) => {
-    console.log({ id });
     const item = cartItems.find((item) => item.productId === id);
     if (item && item.quantity < 10) {
       await handleQuantityChange(id, [
@@ -51,6 +48,12 @@ function ShoppingCart({ onClose }) {
               shopId: item.shopId,
               old_quantity: item.quantity,
               productId: item.productId,
+              name: item.name,
+              price: Number(item.price),
+              image: item.image,
+              size: item.size,
+              color: item.color,
+              sku_id: item.sku_id,
             },
           ],
         },
@@ -71,6 +74,12 @@ function ShoppingCart({ onClose }) {
               shopId: item.shopId,
               old_quantity: item.quantity,
               productId: item.productId,
+              name: item.name,
+              price: Number(item.price),
+              image: item.image,
+              size: item.size,
+              color: item.color,
+              sku_id: item.sku_id,
             },
           ],
         },
@@ -79,9 +88,9 @@ function ShoppingCart({ onClose }) {
   };
 
   // Hàm xóa sản phẩm khỏi giỏ hàng
-  const handleRemoveItem = async () => {
+  const handleRemoveItem = async (id) => {
     try {
-      await deleteCart().unwrap();
+      await deleteCart(id).unwrap();
       message.success("Đã xóa sản phẩm khỏi giỏ hàng");
     } catch (error) {
       message.error("Không thể xóa sản phẩm");
@@ -101,17 +110,15 @@ function ShoppingCart({ onClose }) {
 
   return (
     <Card
-      className="shopping-cart-drawer"
-      title={`Giỏ hàng (${cartItems.length} Item${
-        cartItems.length !== 1 ? "s" : ""
-      })`}
+      className="shopping-cart-drawer relative overflow-hidden h-full"
+      title={`Giỏ hàng (${totalCart} sản phẩm)`}
       extra={
         <Button type="text" onClick={onClose}>
           ×
         </Button>
       }
     >
-      <div className="cart-items space-y-4">
+      <div className="cart-items space-y-4 h-[500px] overflow-auto ">
         {cartItems.map((item) => (
           <Flex
             key={item.productId}
@@ -125,7 +132,7 @@ function ShoppingCart({ onClose }) {
               className="w-24 h-24 object-cover"
             />
             <div className="flex-1">
-              <Title level={5} className="m-0">
+              <Title level={5} className="m-0 line-clamp-2">
                 {item.name}
               </Title>
               <Text className="text-purple-600 font-medium">${item.price}</Text>
@@ -173,7 +180,9 @@ function ShoppingCart({ onClose }) {
                   type="text"
                   icon={<DeleteOutlined />}
                   className="ml-auto"
-                  onClick={() => handleRemoveItem(item.id)}
+                  onClick={() => {
+                    handleRemoveItem(item.sku_id);
+                  }}
                 />
               </Flex>
             </div>
@@ -182,15 +191,7 @@ function ShoppingCart({ onClose }) {
       </div>
 
       {cartItems.length > 0 ? (
-        <div className="mt-8">
-          {/* <div className="klarna-info text-center text-sm text-gray-600 mb-4">
-            4-interest-free payments of ${(totalAmount / 4).toFixed(2)} with
-            Klarna.
-            <Button type="link" className="p-0 ml-1">
-              Learn more
-            </Button>
-          </div> */}
-
+        <div className="absolute bottom-0 w-full">
           <Button
             type="primary"
             block
@@ -198,7 +199,7 @@ function ShoppingCart({ onClose }) {
             onClick={handleCheckout}
             loading={isCheckingOut}
           >
-            Đi đến thanh toán - ${totalAmount.toFixed(2)}
+            Đi đến thanh toán - {validateFormMoney(totalAmount)} VND
           </Button>
         </div>
       ) : (

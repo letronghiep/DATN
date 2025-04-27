@@ -8,6 +8,7 @@ import HomeHeader from "../components/header/Header";
 import { getCategoryByParentId } from "../services/category";
 import { getAuth } from "../stores/slices/authSlice";
 import ShoppingCart from "../components/shopping-cart";
+import Chat from "../components/Chat";
 
 function HomeLayout({ children }) {
   const { Content } = Layout;
@@ -80,6 +81,7 @@ function HomeLayout({ children }) {
           >
             <ShoppingCart />
           </Drawer>
+          <Chat />
         </Layout>
       </Content>
       <Footer />

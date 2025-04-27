@@ -27,10 +27,10 @@ const updateCart = async (req, res, next) => {
 };
 const deleteCart = async (req, res, next) => {
   new SuccessResponse({
-    message: "deleted products",
+    message: "deleted products cart",
     metadata: await deleteUserCartService({
       userId: req.user.userId,
-      ...req.body,
+      sku_id: req.params.sku_id,
     }),
   }).send(res);
 };

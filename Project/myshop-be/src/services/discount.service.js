@@ -174,7 +174,6 @@ const getDiscountAmountService = async ({
   // shopId,
   products,
 }) => {
-  console.log({ codeId });
   const foundDiscount = await checkDiscountExists({
     filter: {
       discount_code: codeId,

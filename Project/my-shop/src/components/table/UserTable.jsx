@@ -4,10 +4,10 @@ import { useDeleteUserMutation } from "../../apis/usersApi";
 import { useState } from "react";
 
 const UserTable = ({ data }) => {
-  console.log({ data });
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tableId, setTableId] = useState();
+  const [pageSize, setPageSize] = useState(5);
 
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -137,7 +137,17 @@ const UserTable = ({ data }) => {
         loading={isLoading}
         columns={columns}
         dataSource={data?.data}
-        pagination={true}
+        pagination={{
+          pageSize: pageSize,
+          total: data?.totalRows,
+          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} danh mục`,
+          showSizeChanger: true,
+          pageSizeOptions: ['5', '10', '20', '50'],
+          onChange: (page, pageSize) => {
+            setPageSize(pageSize);
+            console.log(pageSize);
+          },
+        }}
       />
       <Modal
         title="Xác nhận xóa"

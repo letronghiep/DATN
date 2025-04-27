@@ -70,16 +70,6 @@ function VoucherForm({ onSubmit, control, setValue, voucher, loadingSubmit }) {
         break;
     }
   };
-  // const discount_applies_to = [
-  //   {
-  //     value: "all",
-  //     label: "Áp dụng toàn shop",
-  //   },
-  //   {
-  //     value: "specific",
-  //     label: "Áp dụng cho sản phẩm",
-  //   },
-  // ];
   const selectBefore = (
     <Select onChange={handleChangeOption} defaultValue="fixed_amount">
       <Option value="fixed_amount">Theo số tiền</Option>
@@ -89,26 +79,6 @@ function VoucherForm({ onSubmit, control, setValue, voucher, loadingSubmit }) {
   return (
     <form className="" onSubmit={onSubmit}>
       <div className="">
-        {/* <div className="flex items-center gap-x-4">
-          <h4>Loại mã: </h4>
-          <div className="flex items-center gap-x-3">
-            {discount_applies_to.map((item, index) => (
-              <div key={index} className="flex items-center ">
-                <input
-                  type="radio"
-                  name="discount_applies_to"
-                  {...register("discount_applies_to")}
-                  value={item.value}
-                  checked={item.value === voucher?.discount_applies_to}
-                  onChange={(e) =>
-                    setValue("discount_applies_to", e.target.value)
-                  }
-                />
-                <label className="ml-2">{item.label}</label>
-              </div>
-            ))}
-          </div>
-        </div> */}
         <div className="">
           <h4>Tên mã giảm giá</h4>
           <InputCustom

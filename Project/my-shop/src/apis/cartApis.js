@@ -50,8 +50,8 @@ export const cartApi = createApi({
 
     // Xóa giỏ hàng
     deleteCart: builder.mutation({
-      query: () => ({
-        url: "/cart",
+      query: (sku_id) => ({
+        url: "/cart" + "/" + sku_id,
         method: "DELETE",
       }),
       invalidatesTags: ["cart"],
@@ -76,34 +76,6 @@ export const cartApi = createApi({
       invalidatesTags: ["cart"],
     }),
 
-    // Xóa toàn bộ giỏ hàng
-    clearCart: builder.mutation({
-      query: () => ({
-        url: "/cart/clear",
-        method: "DELETE",
-      }),
-      invalidatesTags: ["cart"],
-    }),
-
-    // Áp dụng mã giảm giá
-    applyVoucher: builder.mutation({
-      query: (code) => ({
-        url: "/cart/voucher/apply",
-        method: "POST",
-        body: { code },
-      }),
-      invalidatesTags: ["cart"],
-    }),
-
-    // Xóa mã giảm giá
-    removeVoucher: builder.mutation({
-      query: () => ({
-        url: "/cart/voucher",
-        method: "DELETE",
-      }),
-      invalidatesTags: ["cart"],
-    }),
-
     // Thanh toán giỏ hàng
     checkout: builder.mutation({
       query: (data) => ({
@@ -123,9 +95,6 @@ export const {
   useDeleteCartMutation,
   useUpdateCartItemMutation,
   useRemoveFromCartMutation,
-  useClearCartMutation,
-  useApplyVoucherMutation,
-  useRemoveVoucherMutation,
   useCheckoutMutation,
 } = cartApi;
 

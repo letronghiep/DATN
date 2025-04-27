@@ -51,6 +51,13 @@ export const productsApi = createApi({
         method: "DELETE",
       }),
     }),
+    getFavoriteProducts: builder.query({
+      query: () => ({
+        url: "/product/favorite",
+        method: "GET",
+      }),
+      providesTags: ["products"],
+    }),
   }),
 });
 export const {
@@ -58,5 +65,6 @@ export const {
   useGetArrivalsQuery,
   useSearchProductQuery,
   useDeleteProductMutation,
+  useGetFavoriteProductsQuery,
 } = productsApi;
 export default productsApi;

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import SelectCustom from "./Select";
 
-function LocationSelect({ setPosition, onApply }) {
+function LocationSelect({ setPosition, onApply, dataLocation, disabled }) {
   const { control, watch, setValue } = useForm({
     defaultValues: {
       ward: "",
@@ -19,6 +19,49 @@ function LocationSelect({ setPosition, onApply }) {
   const [provinceId, setProvinceId] = React.useState();
   const [districtId, setDistrictId] = React.useState();
   const [wardId, setWardId] = React.useState();
+  // Map dataLocation vào form và trigger load dữ liệu tương ứng
+  useEffect(() => {
+    if (
+      dataLocation?.province &&
+      provinces.length &&
+      !provinceId // tránh gọi lại nếu đã có
+    ) {
+      const selectedProvince = provinces.find(
+        (p) => p.name === dataLocation.province
+      );
+      if (selectedProvince) {
+        setProvinceId(selectedProvince.id);
+        setValue("province", selectedProvince.name);
+      }
+    }
+  }, [dataLocation?.province, provinces, provinceId, setValue]);
+
+  useEffect(() => {
+    if (
+      dataLocation?.district &&
+      districts.length &&
+      provinceId &&
+      !districtId
+    ) {
+      const selectedDistrict = districts.find(
+        (d) => d.name === dataLocation.district
+      );
+      if (selectedDistrict) {
+        setDistrictId(selectedDistrict.id);
+        setValue("district", selectedDistrict.name);
+      }
+    }
+  }, [dataLocation?.district, districts, districtId, provinceId, setValue]);
+
+  useEffect(() => {
+    if (dataLocation?.ward && wards.length && districtId && !wardId) {
+      const selectedWard = wards.find((w) => w.name === dataLocation.ward);
+      if (selectedWard) {
+        setWardId(selectedWard.id);
+        setValue("ward", selectedWard.name);
+      }
+    }
+  }, [dataLocation?.ward, wards, wardId, districtId, setValue]);
   // Fetch provinces on mount
   useEffect(() => {
     async function fetchProvinces() {
@@ -123,6 +166,7 @@ function LocationSelect({ setPosition, onApply }) {
         keyField="id"
         placeholder="Tỉnh/Thành phố"
         onChange={(value) => handleSelectProvince(value)}
+        disabled={disabled}
       />
       <SelectCustom
         name="district"
@@ -133,6 +177,7 @@ function LocationSelect({ setPosition, onApply }) {
         keyField="id"
         placeholder="Quận/Huyện"
         onChange={(value) => handleSelectDistrict(value)}
+        disabled={disabled}
       />
       <SelectCustom
         name="ward"
@@ -143,6 +188,7 @@ function LocationSelect({ setPosition, onApply }) {
         keyField="id"
         placeholder="Phường/Xã"
         onChange={(value) => handleSelectWard(value)}
+        disabled={disabled}
       />
     </div>
   );

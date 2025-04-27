@@ -10,12 +10,22 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { useSearchCategoriesQuery } from "../../../apis/categoriesApi";
 import CategoriesTable from "../../../components/table/CategoriesTable";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function CategoriesListPage() {
   var { Title } = Typography;
   const [searchParams, setSearchParams] = useSearchParams("");
   const [keySearch, setKeySearch] = useState("");
+  const [pageSize, setPageSize] = useState(10);
+  useEffect(() => {
+    const limit = searchParams.get("limit");
+    if (limit) {
+      setPageSize(parseInt(limit));
+      const params = new URLSearchParams(searchParams);
+      params.set("limit", pageSize);
+      setSearchParams(params);
+    }
+  }, [searchParams, pageSize, setPageSize, setSearchParams]);
   // const { Search } = Input;
   // const [categories, setCategories] = useState();
   const {
@@ -153,7 +163,7 @@ function CategoriesListPage() {
         <Button type="default">Đặt lại</Button>
       </Flex>
       {/* List Product */}
-      <CategoriesTable data={categories?.metadata || []} />
+      <CategoriesTable data={categories?.metadata || []} setPageSize={setPageSize} pageSize={pageSize} />
     </Flex>
   );
 }

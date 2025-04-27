@@ -2,10 +2,11 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import ProductForm from "./ProductForm";
 import { createProduct } from "~/services/product";
 import { notification } from "antd";
+import { useNavigate } from "react-router-dom";
 
 function ProductCreatePage() {
+  const navigate = useNavigate();
   const onSubmit = async (data) => {
-    console.log({data});
     const submitData = {
       ...data,
       product_price: parseFloat(
@@ -20,16 +21,15 @@ function ProductCreatePage() {
           : data.product_quantity
       ),
     };
-    console.log({submitData});
     const res = await createProduct(submitData);
     if (res.status === 201) {
       notification.success({
         message: "Tạo sản phẩm thành công",
         showProgress: true,
         placement: "top",
-        // onClose: () => {
-        //   navigate("/login");
-        // },
+        onClose: () => {
+          navigate("/seller/products");
+        },
       });
     } else {
       notification.error({

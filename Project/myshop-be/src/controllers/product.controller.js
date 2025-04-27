@@ -17,6 +17,7 @@ const {
   increaseViewProductService,
   getArrivalsProductService,
   getHomePageService,
+  getFavoriteProductsService,
 } = require("../services/product.service");
 const {
   getRelatedProductsService,
@@ -274,6 +275,16 @@ const getHomePage = async (req, res, next) => {
     metadata: await getHomePageService(),
   }).send(res);
 };
+const getFavoriteProducts = async (req, res, next) => {
+  new SuccessResponse({
+    message: "Lấy danh sách sản phẩm yêu thích thành công",
+    metadata: await getFavoriteProductsService({
+      userId: req.user.userId,
+      limit: parseInt(req.query.limit) || 10,
+      page: parseInt(req.query.page) || 1
+    }),
+  }).send(res);
+};
 module.exports = {
   createProductByShop,
   updateProductByShop,
@@ -300,4 +311,5 @@ module.exports = {
   increaseViewProduct,
   getArrivalsProduct,
   getHomePage,
+  getFavoriteProducts,
 };

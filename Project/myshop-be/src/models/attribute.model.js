@@ -17,7 +17,6 @@ var attributeSchema = new Schema(
         attribute_id: {
           type: Number,
           required: true,
-          unique: true,
         },
         display_name: {
           type: String,

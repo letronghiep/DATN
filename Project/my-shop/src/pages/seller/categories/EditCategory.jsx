@@ -8,7 +8,7 @@ import {
 import CategoryForm from "../../../components/form/category-form";
 import SpinLoading from "../../../components/loading/SpinLoading";
 import { notification, Typography } from "antd";
-
+import { useNavigate } from "react-router-dom";
 function EditCategory() {
   const {
     handleSubmit, 
@@ -18,7 +18,7 @@ function EditCategory() {
   } = useForm({
     criteriaMode: "all",
   });
-
+  const navigate = useNavigate();
   const { categoryId } = useParams();
   const { data, loading, error } = useGetCategoryByIdQuery(categoryId);
   const {
@@ -42,7 +42,7 @@ function EditCategory() {
         showProgress: true,
         placement: "top",
         onClose: () => {
-          // navigate("/login");
+          navigate("/seller/categories");
           reset();
           window.location.reload();
         },

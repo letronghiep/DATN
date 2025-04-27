@@ -3,7 +3,6 @@ import { useEffect, useMemo } from "react";
 import InputCustom from "../inputs/Input";
 
 const SkuTable = ({ control, watch, setValue, skuList }) => {
-  // const {  } = useFormContext();
   const variations = watch("variations") || [];
 
   const generateSkuData = () => {
@@ -52,8 +51,8 @@ const SkuTable = ({ control, watch, setValue, skuList }) => {
   useEffect(() => {
     const newSkuData = generateSkuData();
     if (newSkuData.length > 0) {
-      const data = newSkuData.map((sku) => {
-        const skuObj = skuList.find(
+      const data = newSkuData?.map((sku) => {
+        const skuObj = skuList?.find(
           (s) => s.sku_name === `${sku["Màu sắc"]}, ${sku["Size"]}`
         );
         return {
@@ -66,7 +65,6 @@ const SkuTable = ({ control, watch, setValue, skuList }) => {
       setValue("sku_list", data);
     }
   }, [variations, generateSkuData]); // Theo dõi trực tiếp variations
-  console.log({ skuList });
   useEffect(() => {
     if (skuList && skuList.length > 0) {
       setValue("sku_list", skuList);

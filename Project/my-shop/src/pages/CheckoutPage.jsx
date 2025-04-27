@@ -18,48 +18,48 @@ import { useGetDiscountsQuery } from "../apis/vouchersApi";
 import InputCustom from "../components/inputs/Input";
 import LocationSelect from "../components/inputs/LocationSelect";
 import SpinLoading from "../components/loading/SpinLoading";
-import { useReviewOrderMutation } from "../apis/ordersApi";
+import {
+  useCheckoutMutation,
+  useCreateCheckoutOnlineMutation,
+  useReviewOrderMutation,
+} from "../apis/ordersApi";
 import { validateFormMoney } from "../helpers";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-const BANK_INFO = {
-  accountName: "Đỗ Bích Ngọc",
-  accountNumber: "16525111",
-  bankName: "TMCP Á Châu (ACB)",
-  branch: "ACB - CN THANG LONG",
-  swiftCode: "ASCBVNVX",
-  transferContent: "Họ tên + SĐT đặt hàng",
-};
 
 function CheckoutPage() {
   const [checkout_order, setCheckout_order] = useState();
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [productCarts, setProductCarts] = useState();
   const [discountCode, setDiscountCode] = useState("");
+  const [shopOrderIds, setShopOrderIds] = useState([]);
   const { data, isLoading } = useGetCartQuery();
   const { data: vouchersData } = useGetDiscountsQuery({
     q: "",
     discount_status: "active",
   });
   const [reviewOrder] = useReviewOrderMutation();
+  const [checkout] = useCheckoutMutation();
+  const [createCheckoutOnline] = useCreateCheckoutOnlineMutation();
   useEffect(() => {
     const handleReviewOrder = async () => {
       try {
         if (data && data.metadata) {
           const response = await reviewOrder({
-            cartId: data?.metadata?._id,
-            userId: data?.metadata?.cart_userId,
-            shop_order_ids: data?.metadata?.cart_products,
+            cartId: data?.metadata?.carts?._id,
+            userId: data?.metadata?.carts?.cart_userId,
+            shop_order_ids: data?.metadata?.carts?.cart_products,
             discount_code: discountCode,
             payment_method: paymentMethod,
           });
 
-          if (response.data.status === 200) {
+          if (response && response.data.status === 200) {
             setCheckout_order(response.data?.metadata.checkout_order);
+            setShopOrderIds(response.data?.metadata?.shop_order_ids);
           }
-          if (response.error) {
+          if (response && response.error) {
             // Xử lý lỗi nếu có
             console.error("Lỗi khi gọi API:", response.error);
           }
@@ -70,7 +70,7 @@ function CheckoutPage() {
     };
 
     handleReviewOrder();
-  }, [data, data?.metadata, reviewOrder, paymentMethod]);
+  }, [data, data?.metadata?.carts, reviewOrder, paymentMethod, discountCode]);
   useEffect(() => {
     if (data && data.metadata) {
       setProductCarts(data?.metadata?.cart_products);
@@ -83,13 +83,15 @@ function CheckoutPage() {
     setValue,
   } = useForm({
     defaultValues: {
-      payment_method: "COD",
-      fullName: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      note: "",
+      shop_order_ids: [],
+      cartId: "",
+      userId: "",
+      user_address: "",
+      user_payment: {
+        paymentMethod: "",
+        paymentGateway: "",
+        paymentToken: "",
+      },
     },
     mode: "onChange",
   });
@@ -100,7 +102,13 @@ function CheckoutPage() {
     ward: "",
   });
 
-  const cartItems = data?.metadata?.cart_products || [];
+  useEffect(() => {
+    if (paymentMethod) {
+      setValue("user_payment.paymentMethod", paymentMethod);
+    }
+  }, [paymentMethod, setValue]);
+  const totalCart = data?.metadata?.totalCart || [];
+  const cartItems = data?.metadata?.carts?.cart_products || [];
   const subtotal = data?.metadata?.cart_total_price || 0;
   const shipping = 0;
   const points = 0;
@@ -111,14 +119,17 @@ function CheckoutPage() {
       // await applyVoucher(discountCode);
       if (discountCode) {
         const response = await reviewOrder({
-          cartId: data?.metadata?._id,
-          userId: data?.metadata?.cart_userId,
-          shop_order_ids: data?.metadata?.cart_products,
+          cartId: data?.metadata?.carts?._id,
+          userId: data?.metadata?.carts?.cart_userId,
+          shop_order_ids: data?.metadata?.carts?.cart_products,
           discount_code: discountCode,
           payment_method: paymentMethod,
         });
         if (response.data?.status === 200) {
           setCheckout_order(response.data?.metadata.checkout_order);
+          setShopOrderIds(response.data?.metadata?.shop_order_ids);
+        } else {
+          message.error(response.error?.data?.message);
         }
       }
     } catch (error) {
@@ -143,6 +154,10 @@ function CheckoutPage() {
         district: user.usr_district,
         province: user.usr_city,
       });
+      setValue("user_address", user.usr_address);
+      setValue("userId", user._id);
+      setValue("shop_order_ids", shopOrderIds);
+      setValue("cartId", data?.metadata?.carts?._id);
       setValue("address", user.usr_address);
       setValue("fullName", user.usr_full_name);
       setValue("email", user.usr_email);
@@ -151,17 +166,33 @@ function CheckoutPage() {
       setValue("district", user.usr_district);
       setValue("ward", user.usr_ward);
     }
-  }, [user, setValue]);
+  }, [user, setValue, shopOrderIds, data?.metadata?.carts]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (dataSubmit) => {
     try {
-      // await checkout({
-      //   ...data,
-      //   discount_code: discountCode,
-      // });
-      message.success("Đặt hàng thành công!");
+      if (paymentMethod === "COD") {
+        const data = await checkout({
+          ...dataSubmit,
+          discount_code: discountCode,
+        });
+        if (data.data.status === 200) {
+          message.success("Đặt hàng thành công!");
+        }
+      } else {
+        const data = await createCheckoutOnline({
+          ...dataSubmit,
+          discount_code: discountCode,
+        });
+        console.log(data);
+        if (data.data.status === 200) {
+          message.success("Đặt hàng thành công!");
+          window.location.href = data.data.metadata.order_url;
+          // window.open(data.data.metadata.order_url, '_blank');
+        }
+      }
     } catch (error) {
       message.error("Có lỗi xảy ra khi đặt hàng!");
+      console.log(error);
     }
   };
 
@@ -186,10 +217,18 @@ function CheckoutPage() {
               d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             />
           </svg>
-          <h2 className="text-2xl font-semibold mb-4">Giỏ hàng của bạn đang trống</h2>
-          <p className="text-gray-500 mb-8">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+          <h2 className="text-2xl font-semibold mb-4">
+            Giỏ hàng của bạn đang trống
+          </h2>
+          <p className="text-gray-500 mb-8">
+            Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm
+          </p>
           <Link to="/">
-            <Button type="primary" size="large" className="bg-black hover:!bg-white hover:!text-black hover:!border-black">
+            <Button
+              type="primary"
+              size="large"
+              className="bg-black hover:!bg-white hover:!text-black hover:!border-black"
+            >
               Quay về trang chủ
             </Button>
           </Link>
@@ -302,11 +341,11 @@ function CheckoutPage() {
                   <Radio value="COD">Thanh toán khi nhận hàng (COD)</Radio>
                 </div>
                 <div className="border rounded-md p-4 cursor-pointer hover:border-gray-400">
-                  <Radio value="BANK">Thanh toán chuyển khoản</Radio>
+                  <Radio value="BANK">Thanh toán với tài khoản ngân hàng</Radio>
                 </div>
               </Radio.Group>
 
-              {paymentMethod === "BANK" && (
+              {/* {paymentMethod === "BANK" && (
                 <div className="mt-4">
                   <div className="text-red-500 font-medium mb-2">
                     QUÝ KHÁCH MUA HÀNG CÓ THỂ CHUYỂN KHOẢN VÀO TÀI KHOẢN SAU:
@@ -368,7 +407,7 @@ function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -376,10 +415,10 @@ function CheckoutPage() {
           <div className="md:col-span-5">
             <Card className="bg-gray-50">
               <Title level={4} className="mb-4">
-                Đơn Hàng ({cartItems.length} sản phẩm)
+                Đơn Hàng ({totalCart} sản phẩm)
               </Title>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4 mb-6 h-[270px] overflow-auto">
                 {cartItems.map((item, index) => (
                   <Flex
                     key={item.productId}
@@ -394,7 +433,7 @@ function CheckoutPage() {
                         className="w-20 h-20 object-cover rounded"
                       />
                       <span className="absolute -top-2 -right-2 w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center text-xs">
-                        {index + 1}
+                        {item.quantity}
                       </span>
                     </div>
                     <div className="flex-1">
@@ -452,7 +491,6 @@ function CheckoutPage() {
                     ))}
                   </Select>
                   <Button
-                    // type="default"
                     onClick={handleApplyDiscount}
                     className="hover:!border-black hover:!outline-black hover:bg-white hover:!text-black bg-black rounded-sm text-white"
                   >

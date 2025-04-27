@@ -1,10 +1,10 @@
 import { axiosInstance } from "../../core/axiosInstance";
 import { apiOrigin } from "~/constants";
 
-export async function getNotification(userId, isAll) {
+export async function getNotification(userId, isAll, isRead) {
   try {
     const res = await axiosInstance.get(
-      `${apiOrigin}/notification?user_id=${userId}&isAll=${isAll}`
+      `${apiOrigin}/notifications?user_id=${userId}&isAll=${isAll}&isRead=${isRead}`
     );
     const data = await res.data;
     return data;
@@ -15,10 +15,7 @@ export async function getNotification(userId, isAll) {
 export async function readNotification(notify_id, isRead) {
   try {
     const res = await axiosInstance.patch(
-      `${apiOrigin}/notification/${notify_id}`,
-      {
-        isRead,
-      }
+      `${apiOrigin}/notifications/${notify_id}?isRead=${isRead}`
     );
     const data = await res.data;
     return data;
@@ -26,10 +23,10 @@ export async function readNotification(notify_id, isRead) {
     console.log(error);
   }
 }
-export async function countNotification(isRead) {
+export async function countNotification(isRead, isAll) {
   try {
     const res = await axiosInstance.get(
-      `${apiOrigin}/notification/count?isRead=${isRead}`
+      `${apiOrigin}/notifications/count?isRead=${isRead}&isAll=${isAll}`
     );
     const data = await res.data;
     return data;

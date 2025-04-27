@@ -4,6 +4,7 @@ import {
   LogoutOutlined,
   ShoppingCartOutlined,
   UserOutlined,
+  ShoppingOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -16,19 +17,23 @@ import {
 } from "antd";
 import { Header } from "antd/es/layout/layout";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../stores/slices/authSlice";
 
 function HomeHeader({ user, onOpenCart }) {
   const { Search } = Input;
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const onSearch = (value) => {
+    if (value.trim()) {
+      navigate(`/search?q=${encodeURIComponent(value.trim())}`);
+    }
+  };
 
   const logoutUser = async () => {
     try {
-      // await dispatch(logoutAuth()).unwrap();
       const data = await dispatch(logout()).unwrap();
-      console.log({ data });
-      // const res = await handleLogout();
       if (data) {
         notification.success({
           message: "Logged out successfully",
@@ -71,22 +76,27 @@ function HomeHeader({ user, onOpenCart }) {
             alt="avatar"
             size={60}
           />
-          <Typography className="hidden md:block">
+          <Link to="/profile" className="hidden md:block">
             {user?.usr_full_name || user?.usr_name}
-          </Typography>
+          </Link>
         </Flex>
       ),
     },
     {
       key: "2",
+      icon: <ShoppingOutlined />,
+      label: <Link to="/my-orders">Đơn hàng của tôi</Link>,
+    },
+    {
+      key: "3",
       icon: <UserOutlined />,
-      label: <Typography>Hồ Sơ Cá nhân</Typography>,
+      label: <Link to="/profile">Hồ Sơ Cá nhân</Link>,
     },
     {
       type: "divider",
     },
     {
-      key: "3",
+      key: "4",
       icon: <LogoutOutlined />,
       label: <Typography>Đăng xuất</Typography>,
       danger: true,
@@ -130,15 +140,17 @@ function HomeHeader({ user, onOpenCart }) {
           placeholder="Tìm kiếm sản phẩm"
           size="large"
           style={{ width: 600 }}
+          onSearch={onSearch}
+          allowClear
         />
         <Flex className="flex items-center gap-x-4">
-          <div onClick={onNavigateFavoritePage}>
+          <Link to="/favorite-products" onClick={onNavigateFavoritePage}>
             <HeartOutlined
               style={{
                 fontSize: 20,
               }}
             />
-          </div>
+          </Link>
           <div onClick={onOpenCart}>
             <ShoppingCartOutlined
               style={{

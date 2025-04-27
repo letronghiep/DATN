@@ -113,7 +113,6 @@ const loginService = async ({ usr_name, usr_password }) => {
 // logout
 const logoutService = async (keyStore) => {
   try {
-    console.log(keyStore);
     const delKey = await removeKeyById(keyStore._id);
     return delKey;
   } catch (error) {
@@ -140,7 +139,6 @@ const handleRefreshTokenService = async ({ refreshToken, keyStore, user }) => {
     keyStore.publicKey,
     keyStore.privateKey
   );
-  console.log(tokens);
   // Update tokens;
   await KeyStore.updateOne({
     $set: {

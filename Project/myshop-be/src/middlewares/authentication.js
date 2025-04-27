@@ -69,7 +69,7 @@ const isAdmin = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const user = await User.findById(userId).populate("usr_role").lean();
-    if (user.usr_role.rol_slug !== "s00001") {
+    if (user.usr_role.rol_slug !== "s00002") {
       throw new AuthFailureError("Bạn không có quyền quản trị viên");
     }
     return next();

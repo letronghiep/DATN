@@ -8,6 +8,7 @@ const { NotFoundError } = require("../core/error.response");
 const {
   createFlashSaleService,
   getFlashSaleService,
+  getFlashSalesService,
 } = require("../services/flashsale.service");
 const { CREATED, SuccessResponse } = require("../core/success.response");
 
@@ -26,10 +27,21 @@ const createFlashSale = async (req, res, next) => {
   }).send(res);
 };
 
+const getFlashSales = async (req, res, next) => {
+  new SuccessResponse({
+    message: "Flash sales",
+    metadata: await getFlashSalesService({
+      page: req.query.page,
+      limit: req.query.limit,
+      sort: req.query.sort,
+    }),
+  }).send(res);
+};
+
 const getFlashSale = async (req, res, next) => {
   new SuccessResponse({
     message: "Flash sale",
-    metadata: getFlashSaleService({
+    metadata: await getFlashSalesService({
       flashSaleId: req.params.flash_sale,
     }),
   }).send(res);
@@ -37,4 +49,5 @@ const getFlashSale = async (req, res, next) => {
 module.exports = {
   createFlashSale,
   getFlashSale,
+  getFlashSales,
 };

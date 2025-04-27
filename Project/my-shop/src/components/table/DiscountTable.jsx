@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDeleteDiscountMutation } from "../../apis/vouchersApi";
 
-const DiscountTable = ({ data }) => {
+const DiscountTable = ({ data, pageSize, setPageSize }) => {
   const navigate = useNavigate();
   const columns = [
     {
@@ -99,7 +99,7 @@ const DiscountTable = ({ data }) => {
           <Button
             variant="link"
             color="primary"
-            onClick={() => navigate(`/seller/vouchers/edit/${record._id}`)}
+            onClick={() => navigate(`/seller/vouchers/edit/${record._id}?redirect=${encodeURIComponent(window.location.href)}`)}
             className=""
           >
             Cập nhật
@@ -131,7 +131,6 @@ const DiscountTable = ({ data }) => {
   const handleDeleteUser = async (id) => {
     try {
       const response = await deleteDiscount(id).unwrap();
-      console.log(response);
       if (response.status === 200) {
         notification.success({
           message: "Xóa voucher thành công",
@@ -152,7 +151,21 @@ const DiscountTable = ({ data }) => {
   };
   return (
     <>
-      <Table loading={isLoading} columns={columns} dataSource={data} />
+      <Table 
+        loading={isLoading} 
+        columns={columns} 
+        dataSource={data?.data} 
+        pagination={{
+          pageSize: pageSize,
+          total: data?.totalRows,
+          showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} voucher`,
+          showSizeChanger: true,
+          pageSizeOptions: ['5', '10', '20', '50'],
+          onChange: (page, pageSize) => {
+            setPageSize(pageSize);
+          },
+        }}
+      />
       <Modal
         title="Xác nhận xóa"
         open={isModalOpen}

@@ -1,8 +1,10 @@
 import {
   Breadcrumb,
   Button,
+  DatePicker,
   Flex,
   Input,
+  message,
   Modal,
   Segmented,
   Select,
@@ -14,7 +16,9 @@ import SpinLoading from "~/components/loading/SpinLoading";
 import OrderTable from "../../../components/table/OrderTable";
 import { getOrderByUser } from "../../../services/seller/order";
 import { getShipment } from "../../../services/shipment";
-import { DatePicker } from "antd";
+import { exportOrders } from "../../../services/order";
+import { useGetOrderForAdminQuery } from "../../../apis/ordersApi";
+
 function OrderListPage() {
   const { Title } = Typography;
   const { Option } = Select;
@@ -28,21 +32,32 @@ function OrderListPage() {
   const [orderSelected, setOrderSelected] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [orderQuery, setOrderQuery] = useState(`order_status=all`);
   const [datePicker, setDatePicker] = useState({
     start: new Date(),
     end: new Date(),
   });
+  const [billOption, setBillOption] = useState("Xuất hóa đơn");
+  const [limit, setLimit] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const { RangePicker } = DatePicker;
-
+  const { data: orderResponse, isLoading } = useGetOrderForAdminQuery({
+    page: currentPage,
+    limit: limit,
+  });
+  useEffect(() => {
+    if (orderResponse) {
+      setOrders(orderResponse.metadata);
+    }
+  }, [orderResponse]);
   useEffect(() => {
     async function fetchingData() {
       try {
         setLoading(true);
-        const [orderData, shipmentData] = await Promise.all([
-          getOrderByUser({}),
+        const [shipmentData] = await Promise.all([
+          // getOrderByUser({}),
           getShipment(),
         ]);
-        setOrders(orderData.metadata);
         setShipments(shipmentData.metadata);
       } catch (error) {
         console.error(error);
@@ -56,14 +71,23 @@ function OrderListPage() {
   useEffect(() => {
     async function fetchingOrders() {
       try {
-        const orderData = await getOrderByUser(searchParams);
-        setOrders(orderData.metadata);
+        console.log("Fetching with params:", Object.fromEntries(searchParams));
+        // const orderData = await getOrderByUser(Object.fromEntries(searchParams));
+        // setOrders(orderData.metadata);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching orders:", error);
       }
     }
     fetchingOrders();
   }, [searchParams]);
+
+  useEffect(() => {
+    const page = searchParams.get("page");
+    if (page) {
+      setCurrentPage(parseInt(page));
+    }
+  }, [searchParams]);
+
   const options = [
     {
       label: (
@@ -157,15 +181,44 @@ function OrderListPage() {
     },
   ];
   let placeholder = "Nhập mã vận đơn";
-  const handleOk = () => {
-    setConfirmLoading(true);
-    setTimeout(() => {
+  const handleOk = async () => {
+    try {
+      setConfirmLoading(true);
+      const blob = await exportOrders({
+        order_status: orderQuery,
+        startDate: datePicker.start,
+        endDate: datePicker.end,
+      });
+
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `orders_${new Date(datePicker.start).toLocaleDateString()}-${new Date(
+          datePicker.end
+        ).toLocaleDateString()}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      message.success("Xuất file thành công!");
       setOpenModalBill(false);
+    } catch (error) {
+      console.error("Lỗi khi xuất file:", error);
+      message.error("Có lỗi xảy ra khi xuất file!");
+    } finally {
       setConfirmLoading(false);
-    }, 2000);
+      setOpenModalBill(false);
+      setBillOption("Xuất hóa đơn");
+      setOrderQuery(`order_status=all`);
+    }
   };
   const handleCancel = () => {
     setOpenModalBill(false);
+    setBillOption("Xuất hóa đơn");
   };
   const modalSelectBill = (
     <Modal
@@ -177,10 +230,13 @@ function OrderListPage() {
     >
       <RangePicker
         onChange={(value, dateString) => {
-          setDatePicker({
-            start: dateString[0],
-            end: dateString[1],
-          });
+          if (value) {
+            const [start, end] = dateString;
+            setDatePicker({
+              start: new Date(start).toISOString(),
+              end: new Date(end).toISOString(),
+            });
+          }
         }}
       />
     </Modal>
@@ -208,12 +264,25 @@ function OrderListPage() {
     setShipment(shipment);
   };
   const handleConfirmSearch = () => {
-    const params = new URLSearchParams(searchParams);
-    // if (searchKey) {
-    // }
-    params.set(searchType, searchKey);
-    params.set("shipment", shipment);
+    setCurrentPage(1);
+    const params = new URLSearchParams();
+    if (searchKey) {
+      params.set("order_trackingNumber", searchKey);
+      // params.set("search_type", searchType);
+    }
+    if (shipment) {
+      params.set("shipment", shipment);
+    }
+    params.set("page", 1);
+    console.log("Search params:", Object.fromEntries(params));
     setSearchParams(params);
+  };
+  const handleReset = () => {
+    setSearchKey("");
+    setShipment("");
+    setSearchType("order_trackingNumber");
+    setCurrentPage(1);
+    setSearchParams(new URLSearchParams());
   };
   const selectBefore = (
     <Select onChange={handleChangeOption} defaultValue="order_trackingNumber">
@@ -224,18 +293,38 @@ function OrderListPage() {
   );
 
   const handleChangeDataOrder = (value) => {
+    setCurrentPage(1);
     const params = new URLSearchParams(searchParams);
     params.set(`order_status`, value);
+    params.set("page", 1);
     setSearchParams(params);
+    setOrderQuery(`order_status=${value}`);
   };
   const handleChangeBill = (value) => {
     if (value === "invoice_by_date") {
+      setBillOption(value);
       setOpenModalBill(true);
     }
   };
   const handleSortOrder = (value) => {
+    setCurrentPage(1);
     const params = new URLSearchParams(searchParams);
     params.set("sort_by", value);
+    params.set("page", 1);
+    setSearchParams(params);
+  };
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page);
+    setSearchParams(params);
+  };
+  const handleChangeLimit = (value) => {
+    setLimit(value);
+    setCurrentPage(1);
+    const params = new URLSearchParams(searchParams);
+    params.set("limit", value);
+    params.set("page", 1);
     setSearchParams(params);
   };
   if (loading) return <SpinLoading />;
@@ -280,11 +369,14 @@ function OrderListPage() {
           }}
           addonBefore={selectBefore}
           placeholder={placeholder}
+          value={searchKey}
+          onChange={(e) => setSearchKey(e.target.value)}
         />
         <Select
           onChange={handleChangeShipment}
           style={{ width: "auto", flex: 1 }}
           defaultValue="all"
+          value={shipment}
         >
           <Option value="all" disabled>
             Đơn vị vận chuyển
@@ -298,7 +390,9 @@ function OrderListPage() {
         <Button onClick={handleConfirmSearch} type="primary">
           Áp dụng
         </Button>
-        <Button type="default">Đặt lại</Button>
+        <Button onClick={handleReset} type="default">
+          Đặt lại
+        </Button>
       </Flex>
       <Select
         defaultValue="confirmed_date_asc"
@@ -318,6 +412,7 @@ function OrderListPage() {
         <Select
           style={{ width: 240 }}
           placeholder="Xuất hóa đơn"
+          value={billOption}
           onChange={(value) => handleChangeBill(value)}
         >
           <Option value="invoice_by_date">Toàn bộ hóa đơn theo ngày</Option>
@@ -328,13 +423,27 @@ function OrderListPage() {
             Đơn hàng được chọn
           </Option>
         </Select>
+        <Select
+          style={{ width: 120 }}
+          placeholder="Số lượng hiển thị"
+          value={limit}
+          onChange={handleChangeLimit}
+        >
+          <Option value={5}>5 đơn hàng</Option>
+          <Option value={10}>10 đơn hàng</Option>
+          <Option value={20}>20 đơn hàng</Option>
+          <Option value={50}>50 đơn hàng</Option>
+          <Option value={100}>100 đơn hàng</Option>
+        </Select>
       </Flex>
 
-      <OrderTable data={orders} />
-      {
-        openModalBill && modalSelectBill
-        // modalConfirmDelete && modalConfirmDeleteOrder
-      }
+      <OrderTable
+        data={orders}
+        limit={limit}
+        setCurrentPage={handlePageChange}
+        isLoading={isLoading}
+      />
+      {openModalBill && modalSelectBill}
     </>
   );
 }

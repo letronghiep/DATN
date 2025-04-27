@@ -5,6 +5,7 @@ import HomeHeader from "../components/header/Header";
 import { getAuth } from "../stores/slices/authSlice";
 import Footer from "../components/Footer";
 import ShoppingCart from "../components/shopping-cart";
+import Chat from "../components/Chat";
 
 function HomeLayoutNoSidebar({ children }) {
   const { Content } = Layout;
@@ -19,7 +20,6 @@ function HomeLayoutNoSidebar({ children }) {
   const dispatch = useDispatch();
   const userStorage = useSelector((state) => state.user);
   const userData = userStorage?.user;
-  console.log(userData);
   useEffect(() => {
     const token = localStorage.getItem("token");
     const client_id = localStorage.getItem("client_id");
@@ -40,7 +40,6 @@ function HomeLayoutNoSidebar({ children }) {
         try {
           const data = await dispatch(getAuth()).unwrap();
           if (data?.user) {
-            console.log("Fetched user data:", data);
             setUser(data.user);
           }
         } catch (error) {
@@ -84,6 +83,7 @@ function HomeLayoutNoSidebar({ children }) {
           >
             <ShoppingCart onClose={() => setOpenCart(false)}/>
           </Drawer>
+          <Chat />
         </Layout>
       </Content>
       <Footer />

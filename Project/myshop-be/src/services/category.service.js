@@ -7,7 +7,7 @@ const createCategoryService = async ({
   category_id = randomCategoryId(),
   category_name,
   category_thumb,
-  category_parentId = null,
+  category_parentId = [],
 }) => {
   const category = new Category({
     category_id,
