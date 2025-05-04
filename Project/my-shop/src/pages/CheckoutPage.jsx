@@ -8,6 +8,7 @@ import {
   Select,
   Typography,
   message,
+  notification,
 } from "antd";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -176,7 +177,16 @@ function CheckoutPage() {
           discount_code: discountCode,
         });
         if (data.data.status === 200) {
-          message.success("Đặt hàng thành công!");
+          notification.success({
+            message: "Đặt hàng thành công!",
+            description: "Đơn hàng của bạn đã được đặt thành công.",
+            placement: "topRight",
+            duration: 3,
+            showProgress: true,
+            onClose: () => {
+              window.location.href = '/';
+            },
+          });
         }
       } else {
         const data = await createCheckoutOnline({
@@ -185,7 +195,10 @@ function CheckoutPage() {
         });
         console.log(data);
         if (data.data.status === 200) {
-          message.success("Đặt hàng thành công!");
+          notification.success({
+            message: "Đặt hàng thành công!",
+            description: "Đơn hàng của bạn đã được đặt thành công.",
+          });
           window.location.href = data.data.metadata.order_url;
           // window.open(data.data.metadata.order_url, '_blank');
         }

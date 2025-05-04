@@ -292,18 +292,22 @@ const OrderDetailPage = () => {
           <Card title="Tổng thanh toán">
             <div style={{ padding: "0 16px" }}>
               <Row justify="space-between" style={{ marginBottom: 16 }}>
-                <Text>Phí vận chuyển:</Text>
-                <Text>5.44 đ</Text>
+                <Text>Tổng tiền hàng: </Text>
+                <Text>{orderDetail?.order_checkout.totalPrice?.toLocaleString("vi-VN")}{" "} đ</Text>
               </Row>
               <Row justify="space-between" style={{ marginBottom: 16 }}>
-                <Text>Phí dịch vụ:</Text>
-                <Text>5.44 đ</Text>
+                <Text>Phí vận chuyển:</Text>
+                <Text>{orderDetail?.order_checkout.feeShip?.toLocaleString("vi-VN")}{" "} đ</Text>
+              </Row>
+              <Row justify="space-between" style={{ marginBottom: 16 }}>
+                <Text>Giảm giá:</Text>
+                <Text> - {orderDetail?.order_checkout.totalDiscount?.toLocaleString("vi-VN")}{" "} đ</Text>
               </Row>
               <div style={{ border: "1px dashed #d9d9d9", margin: "16px 0" }} />
               <Row justify="space-between">
-                <Text strong>Tổng cộng:</Text>
+                <Text strong>Thành tiền:</Text>
                 <Text strong style={{ fontSize: 18, color: "#ff4d4f" }}>
-                  {orderDetail?.order_checkout.totalPrice?.toLocaleString("vi-VN")}{" "}
+                  {orderDetail?.order_checkout.totalCheckout?.toLocaleString("vi-VN")}{" "}
                   đ
                 </Text>
               </Row>

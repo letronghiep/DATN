@@ -190,9 +190,13 @@ const blockProductService = async ({ product_id, product_shop }) => {
   const foundProduct = await foundProductByShop({ product_id, product_shop });
   if (!foundProduct) throw new NotFoundError("Sản phẩm không tồn tại");
   foundProduct.isBlocked = true;
-  const updatedProduct = await Product.findByIdAndUpdate(product_id, foundProduct, {
-    new: true,
-  });
+  const updatedProduct = await Product.findByIdAndUpdate(
+    product_id,
+    foundProduct,
+    {
+      new: true,
+    }
+  );
   const notify_content = `Người quản trị <a>${foundShop.usr_name}</a> vừa khóa sản phẩm <a>${foundProduct.product_name}</a>`;
   await pushNotifyToSystem({
     notify_content: notify_content,
@@ -380,37 +384,166 @@ const searchProductService = async ({
   q,
   product_status,
   product_category,
+  product_price,
+  size,
+  color,
   limit = 50,
   sort = "ctime",
   currentPage = 1,
   ...query
 }) => {
-  const searchText = q
-    ? {
-        $or: [
-          { product_name: { $regex: `.*${q}.*`, $options: "i" } }, // Tìm trong tên sản phẩm
-          { product_description: { $regex: `.*${q}.*`, $options: "i" } }, // Tìm trong mô tả sản phẩm
-        ],
+  const searchText =
+    q != null
+      ? {
+          $or: [
+            { product_name: { $regex: `.*${q}.*`, $options: "i" } },
+            { product_description: { $regex: `.*${q}.*`, $options: "i" } },
+          ],
+        }
+      : {};
+
+  const price =
+    product_price != null
+      ? Array.isArray(product_price)
+        ? product_price.map(Number)
+        : typeof product_price === "string"
+        ? product_price.split(",").map(Number)
+        : []
+      : [];
+
+  const isValidPriceRange =
+    price.length === 2 && !isNaN(price[0]) && !isNaN(price[1]);
+
+  const category =
+    product_category != null && product_category !== "undefined"
+      ? Array.isArray(product_category)
+        ? product_category.map(Number).filter((v) => !isNaN(v))
+        : typeof product_category === "string"
+        ? product_category
+            .split(",")
+            .map((item) => Number(item))
+            .filter((v) => !isNaN(v))
+        : []
+      : [];
+
+  const isValidCategory = category.length > 0;
+
+  const productFilter = {
+    ...searchText,
+    ...(product_status != null && { product_status }),
+    ...(isValidCategory && { product_category: { $in: category } }),
+    ...(isValidPriceRange && {
+      product_price: { $gte: price[0], $lte: price[1] },
+    }),
+    ...(Object.keys(query).length > 0 ? query : {}),
+  };
+
+  if (size !== "undefined" && color !== "undefined" && size != null && color != null) {
+    const sizes = size.split(",").map((s) => s.trim());
+    const colors = color.split(",").map((c) => c.trim());
+    const combinations = [];
+
+    for (const c of colors) {
+      for (const s of sizes) {
+        combinations.push(`${c}, ${s}`);
       }
-    : {};
-  const category = product_category.split(",");
+    }
+
+    if (combinations.length > 0) {
+      productFilter.product_models = {
+        $elemMatch: {
+          sku_name: { $in: combinations },
+        },
+      };
+    }
+  }
+
   const result = await paginate({
     model: Product,
-    filter: {
-      ...searchText,
-      ...(product_status && { product_status }),
-      ...(product_category && {
-        product_category: { $in: [Number(category)] },
-        ...query,
-      }),
-    },
+    filter: productFilter,
     populate: ["product_shop"],
     limit,
     page: currentPage,
     sort,
   });
+
   return result;
 };
+
+// const searchProductService = async ({
+//   q,
+//   product_status,
+//   product_category,
+//   product_price = [],
+//   size,
+//   color,
+//   limit = 50,
+//   sort = "ctime",
+//   currentPage = 1,
+//   ...query
+// }) => {
+//   const searchText = q
+//     ? {
+//         $or: [
+//           { product_name: { $regex: `.*${q}.*`, $options: "i" } }, // Tìm trong tên sản phẩm
+//           { product_description: { $regex: `.*${q}.*`, $options: "i" } }, // Tìm trong mô tả sản phẩm
+//         ],
+//       }
+//     : {};
+//   const price = Array.isArray(product_price)
+//     ? product_price.map(Number)
+//     : typeof product_price === "string"
+//     ? product_price.split(",").map((item) => Number(item))
+//     : [];
+
+//   const isValidPriceRange =
+//     price.length === 2 && !isNaN(price[0]) && !isNaN(price[1]);
+//   const category = Array.isArray(product_category)
+//     ? product_category.map(Number)
+//     : typeof product_category === "string"
+//     ? product_category.split(",").map((item) => Number(item))
+//     : [];
+//   const isValidCategory = category.length > 0;
+//   const productFilter = {
+//     ...searchText,
+//     ...(product_status && { product_status }),
+//     ...(isValidCategory && {
+//       product_category: { $in: category },
+//       ...query,
+//     }),
+//     ...(isValidPriceRange && {
+//       product_price: { $gte: price[0], $lte: price[1] },
+//     }),
+//   };
+
+//   if (size && color) {
+//     const sizes = size.split(",");
+//     const colors = color.split(",");
+//     const combinations = [];
+
+//     for (const c of colors) {
+//       for (const s of sizes) {
+//         combinations.push(`${c.trim()}, ${s.trim()}`);
+//       }
+//     }
+
+//     productFilter.product_models = {
+//       $elemMatch: {
+//         sku_name: { $in: combinations },
+//       },
+//     };
+//   }
+
+//   const result = await paginate({
+//     model: Product,
+//     filter: productFilter,
+//     populate: ["product_shop"],
+//     limit,
+//     page: currentPage,
+//     sort,
+//   });
+//   return result;
+// };
 
 // get info product
 const getInfoProductService = async ({ product_slug }) => {

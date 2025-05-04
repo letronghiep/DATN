@@ -23,40 +23,30 @@ function ProductByCategory() {
     setSearchParams({ page, offset: limit });
   };
   useEffect(() => {
-    const offset = Number(searchParams.get("offset")) || 5;
+    const offset = Number(searchParams.get("offset")) || 10;
     const currentPage = Number(searchParams.get("page")) || 1;
     setLimit(Number(offset));
     setCurrentPage(Number(currentPage));
   }, [searchParams]);
   const { data, isLoading, refetch } = useSearchProductQuery(
-    { filters },
-    {
-      skip: true, // Chỉ gọi API khi người dùng bấm nút
+    { 
+      q: keySearch,
+      product_status: "published",
+      product_category: product_category,
+      limit: limit,
+      currentPage: currentPage,
+      sort: "ctime",
+      product_price: filters.product_price,
+      size: filters.size,
+      color: filters.color,
+
     }
   );
-  useEffect(() => {
-    // if (!category_id) return;
-    async function getProductByCategory() {
-      const response = await searchProductService(
-        keySearch,
-        "published",
-        product_category,
-        currentPage,
-        limit,
-        ""
-      );
-      if (response.status === 200) {
-        setProducts(response.metadata.data);
-        setTotalRows(response.metadata.totalRows);
-      }
-    }
-    getProductByCategory();
-  }, [product_category, keySearch, limit, currentPage]);
   return (
     <div>
       <div className="grid grid-cols-12 gap-2">
-        {products &&
-          products.map((product) => (
+        {data?.metadata?.data &&
+          data?.metadata?.data.map((product) => (
             <ProductCard
               className="col-span-3 bg-white"
               key={product._id}

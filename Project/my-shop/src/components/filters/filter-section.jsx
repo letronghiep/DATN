@@ -1,11 +1,7 @@
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { useState } from "react";
 
-function FilterSection({ title, filterQueries, setFilterValue }) {
-  // const handleFilterValue = (event) => {
-  //   const filterValue = event.target.value;
-  //   setFilterValue((prevValue) => [...prevValue, filterValue]);
-  // };
+function FilterSection({ title, filterQueries, setFilterValue, selectedValues }) {
   const [open, setOpen] = useState(true);
   return (
     <div className="w-full">
@@ -24,6 +20,8 @@ function FilterSection({ title, filterQueries, setFilterValue }) {
                 type="checkbox"
                 value={filter.id}
                 onChange={(value) => setFilterValue(value.target.value)}
+                // checked={selectedValues.includes(filter.id)}
+                checked={selectedValues.includes(filter.id.toString())}
               />{" "}
               {filter.label}
             </label>

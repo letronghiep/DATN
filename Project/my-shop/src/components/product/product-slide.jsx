@@ -1,6 +1,6 @@
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { Card, Typography } from "antd";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { modifyImageDimensions } from "../../helpers";
 
@@ -37,13 +37,13 @@ function ProductSlide({ products, title }) {
               </button>
               <div
                 ref={scrollRef}
-                className="flex gap-4 overflow-x-hidden scroll-smooth no-scrollbar"
+                className="grid grid-cols-12 gap-4 overflow-x-hidden scroll-smooth no-scrollbar"
               >
                 {products.map((product) => (
                   <Card
                     hoverable
                     key={product._id}
-                    className="relative text-center border shadow-md min-w-[200px] cursor-pointer"
+                    className="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-2 relative text-center border shadow-md min-w-[200px] cursor-pointer"
                     onClick={() => navigate(`/${product.product_slug}`)}
                   >
                     <img

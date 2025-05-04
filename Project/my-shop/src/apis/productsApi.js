@@ -39,8 +39,11 @@ export const productsApi = createApi({
         limit,
         currentPage,
         sort,
+        product_price,
+        size,
+        color,
       }) => ({
-        url: `/product/search?q=${q}&product_status=${product_status}&product_category=${product_category}&limit=${limit}&currentPage=${currentPage}&sort=${sort}`,
+        url: `/product/search?q=${q}&product_price=${product_price}&size=${size}&color=${color}&product_status=${product_status}&product_category=${product_category}&limit=${limit}&currentPage=${currentPage}&sort=${sort}`,
         method: "GET",
       }),
       providesTags: ["products"],

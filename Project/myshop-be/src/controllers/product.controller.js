@@ -60,6 +60,9 @@ const searchProduct = async (req, res, next) => {
       limit: req.query.offset,
       currentPage: req.query.page,
       sort: req.query.sort_by,
+      product_price: req.query.product_price,
+      size: req.query.size,
+      color: req.query.color,
     }),
   }).send(res);
 };

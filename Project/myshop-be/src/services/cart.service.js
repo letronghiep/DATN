@@ -162,17 +162,21 @@ const getListUserCartService = async ({ userId }) => {
       $group: {
         _id: "$cart_products.productId",
         price: { $sum: "$cart_products.price" },
+        quantity: { $sum: "$cart_products.quantity" },
       },
     },
-  ])
-  const totalAmount = await amount.reduce((total, item) => total + Number(item.price), 0);
+  ]);
+  const totalAmount = await amount.reduce(
+    (total, item) => total + Number(item.price) * Number(item.quantity),
+    0
+  );
   const carts = await Cart.findOne({
     cart_userId: new Types.ObjectId(userId),
   }).lean();
   return {
     totalCart,
     carts,
-    totalAmount
+    totalAmount,
   };
 };
 

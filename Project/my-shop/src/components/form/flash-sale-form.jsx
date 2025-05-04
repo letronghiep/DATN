@@ -11,10 +11,9 @@ import {
   Select,
   Spin,
   Typography,
-  Upload,
   message,
 } from "antd";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useSearchProductQuery } from "../../apis/productsApi";
@@ -22,20 +21,20 @@ import UploadSingleImage from "../upload-single-img";
 const { RangePicker } = DatePicker;
 const { Panel } = Collapse;
 const { Title } = Typography;
-
 const FlashSaleForm = ({ initialData, onSubmit, loading }) => {
+  const debounceRef = useRef(null);
   const navigate = useNavigate();
-  const [fileList, setFileList] = useState([]);
   const [expandedProducts, setExpandedProducts] = useState([]);
   const [searchKey, setSearchKey] = useState("");
-  const { data: searchResults, isLoading } = useSearchProductQuery({
-    q: searchKey,
-    product_status: "published",
-    product_category: "",
-    limit: 12,
-    currentPage: 1,
-    sort: "ctime",
-  });
+  const { data: searchResults, isLoading } = useSearchProductQuery(
+    {
+      q: searchKey,
+      product_status: "published",
+    },
+    {
+      skip: !searchKey, // không gọi nếu không có từ khoá
+    }
+  );
   const {
     control,
     handleSubmit,
@@ -54,10 +53,24 @@ const FlashSaleForm = ({ initialData, onSubmit, loading }) => {
     },
   });
 
-  const handleSearch = (value) => {
-    setSearchKey(value);
-  };
-
+  // const handleSearch = (value) => {
+  //   setSearchKey(value);
+  // };
+  const handleSearch = useCallback((value) => {
+    // Xoá timeout cũ nếu có
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+  
+    // Không tìm kiếm nếu ít hơn 2 ký tự
+    if (value.trim().length < 2) {
+      setSearchKey(""); // hoặc bỏ qua việc gọi API
+      return;
+    }
+  
+    // Gán timeout mới
+    debounceRef.current = setTimeout(() => {
+      setSearchKey(value.trim()); // Truyền key vào useQuery để fetch
+    }, 500); // 500ms delay
+  }, []);
   const handleSelectProduct = (value, field) => {
     const selectedProduct = searchResults?.metadata?.data?.find(
       (p) => p.product_id === value
@@ -155,11 +168,11 @@ const FlashSaleForm = ({ initialData, onSubmit, loading }) => {
                           if (value && value.length === 2) {
                             // Lưu giá trị gốc vào field time
                             setValue("time", value);
-                            
+
                             // Chuyển đổi và lưu start_time
                             const startTime = new Date(value[0]);
                             setValue("start_time", startTime);
-                            
+
                             // Chuyển đổi và lưu end_time
                             const endTime = new Date(value[1]);
                             setValue("end_time", endTime);
@@ -289,7 +302,19 @@ const FlashSaleForm = ({ initialData, onSubmit, loading }) => {
                                   options={searchResults?.metadata?.data?.map(
                                     (product) => ({
                                       value: product.product_id,
-                                      label: `${product.product_name} (${product.product_id})`,
+                                      label: (
+                                        <div>
+                                          <div>
+                                            {product.product_name} (
+                                            {product.product_id})
+                                          </div>
+                                          <small>
+                                            Giá:{" "}
+                                            {product.product_price.toLocaleString()}{" "}
+                                            - Kho: {product.product_quantity}
+                                          </small>
+                                        </div>
+                                      ),
                                     })
                                   )}
                                   onSearch={handleSearch}

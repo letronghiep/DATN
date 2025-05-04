@@ -28,12 +28,15 @@ import MyOrder from "../pages/MyOrder";
 import OrderDetailPage from "../pages/OrderDetailPage";
 import UserProfile from "../pages/UserProfile";
 import FavoriteProductPage from "../pages/FavoriteProductPage";
-import BannerList from "../components/seller/banners/BannerList";
-import BannerForm from "../components/seller/banners/BannerForm";
+import BannerList from "../pages/seller/banners/BannerList";
 import NotificationsPage from "../pages/seller/NotificationsPage";
 import SearchPage from "../pages/SearchPage";
 import FlashsalePage from "../pages/seller/flashsale/FlashsalePage";
 import CreateFlashSale from "../pages/seller/flashsale/CreateFlashSale";
+import CreateBannerPage from "../pages/seller/banners/CreateBannerPage";
+import EditBannerPage from "../pages/seller/banners/EditBannerPage";
+import FlashSalePage from "../pages/seller/flashsale/FlashsalePage";
+import FlashSale from "../pages/FlashSale";
 // import ShopLayout from "../layout/ShopLayout";
 // import EditProfile from "../pages/seller/profile/edit/EditProfile";
 // import SalePage from "../pages/seller/SalePage";
@@ -151,6 +154,13 @@ export const routes = [
   {
     path: "/category/:category_id",
     component: ProductByCategory,
+    exact: true,
+    private: false,
+    layout: HomeLayout,
+  },
+  {
+    path: "/flashsale/:id",
+    component: FlashSale,
     exact: true,
     private: false,
     layout: HomeLayout,
@@ -306,7 +316,7 @@ export const routes = [
   },
   {
     path: "/seller/banners/create",
-    component: BannerForm,
+    component: CreateBannerPage,
     exact: true,
     private: true,
     layout: ShopLayout,
@@ -314,7 +324,7 @@ export const routes = [
   },
   {
     path: "/seller/banners/edit/:id",
-    component: BannerForm,
+    component: EditBannerPage,
     exact: true,
     private: true,
     layout: ShopLayout,

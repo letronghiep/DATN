@@ -1,11 +1,17 @@
 {
+    "version": "0.2.0",
     "configurations": [
-    {
-        "name": "Attach to Chrome",
-        "port": 9222,
-        "request": "attach",
-        "type": "chrome",
-        "webRoot": "${workspaceFolder}"
-    }
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug Node Backend",
+        "program": "${workspaceFolder}/myshop-be/server.js",  // file chính Node.js
+        "cwd": "${workspaceFolder}/myshop-be",
+        "runtimeArgs": ["--nolazy"],
+        "restart": true,
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen"
+      }
     ]
-}
+  }
+  

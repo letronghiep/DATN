@@ -111,3 +111,12 @@ export async function getCountFavorite(productId) {
     console.log(error);
   }
 }
+export async function getFlashSaleProducts(page, limit) {
+  try {
+    const res = await axiosInstance.get(`${apiOrigin}/product/flashsale?page=${page}&limit=${limit}`);
+    const data = await res.data;
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}

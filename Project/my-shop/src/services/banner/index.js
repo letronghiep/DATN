@@ -9,3 +9,13 @@ export async function getBanners() {
     console.log(error);
   }
 }
+export async function createBanner(data) {
+  try {
+    const res = await axiosInstance.post(`${apiOrigin}/banner`, data);
+    const responseData = await res.data;
+    return responseData;
+  } catch (error) {
+    console.log(error);
+  }
+}
+

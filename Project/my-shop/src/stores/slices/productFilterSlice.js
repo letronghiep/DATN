@@ -24,7 +24,7 @@ const productFilterSlice = createSlice({
       }
     },
     setPriceRange: (state, action) => {
-      state.priceRange = action.payload;
+      state.product_price = action.payload;
     },
     setSize: (state, action) => {
       state.size = action.payload;

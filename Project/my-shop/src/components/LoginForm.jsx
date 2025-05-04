@@ -49,12 +49,20 @@ function LoginForm({ title, onSubmit, loading }) {
           >
             <div>
               <div className="flex items-center gap-x-2 mb-[60px]">
-                <img
+                {/* <img
                   alt="Logo"
                   src="/logo-white.svg"
                   width={250}
                   height={250}
-                />
+                /> */}
+                <Typography.Title style={{
+                  color: "#fff",
+                  fontSize: "40px",
+                  fontWeight: "bold",
+                  fontFamily: "Poppins",
+                  textTransform: "uppercase",
+                  letterSpacing: "10px",
+                }} level={1} className="text-white font-bold z-[1000]">Fashora</Typography.Title>
               </div>
             </div>
             <p className="max-w-[350px]">{title}</p>

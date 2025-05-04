@@ -20,7 +20,7 @@ function HomePage() {
           getCategoryByParentId(""),
           getBanners(),
         ]);
-        setBanners(bannerList.metadata);
+        setBanners(bannerList.metadata?.data);
         setCategories(categoryList.metadata);
       } catch (error) {
         console.error(error);
@@ -41,7 +41,7 @@ function HomePage() {
                 onClick={() => navigate(`flashsale/${banner.linkTo}`)}
               >
                 <img
-                  src={modifyImageDimensions(banner.thumb, 1200, 345)}
+                  src={modifyImageDimensions(banner.thumb, 360, 1440)}
                   alt={banner.title}
                 />
               </div>

@@ -41,7 +41,7 @@ const getFlashSales = async (req, res, next) => {
 const getFlashSale = async (req, res, next) => {
   new SuccessResponse({
     message: "Flash sale",
-    metadata: await getFlashSalesService({
+    metadata: await getFlashSaleService({
       flashSaleId: req.params.flash_sale,
     }),
   }).send(res);

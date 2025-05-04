@@ -1,22 +1,23 @@
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { Button, Card, Typography } from "antd";
 import { useRef } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { modifyImageDimensions, validateFormMoney } from "../../helpers";
 
 function ProductSlide({ products, title, href }) {
-  const user = useSelector((state) => state.user.user);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
+  
   const scroll = (direction) => {
     if (scrollRef.current) {
+      const scrollAmount = 300; // Điều chỉnh khoảng cách scroll
       scrollRef.current.scrollBy({
-        left: direction === "left" ? -278 : 278,
+        left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
     }
   };
+
   return (
     <div className="my-4">
       {products.length > 0 && (
@@ -31,24 +32,24 @@ function ProductSlide({ products, title, href }) {
             {title}
           </Typography.Title>
           <div className="p-6 bg-white relative my-4">
-            <div className="relative ">
+            <div className="relative">
               <button
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-full shadow-lg z-10"
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-full shadow-lg z-10 hover:bg-gray-300 transition-colors"
                 onClick={() => scroll("left")}
               >
                 <LeftOutlined />
               </button>
               <div
                 ref={scrollRef}
-                className="grid grid-cols-12 gap-4 overflow-x-hidden scroll-smooth no-scrollbar"
+                className="flex overflow-x-auto gap-4 scroll-smooth no-scrollbar"
+                style={{ scrollbarWidth: 'none' }}
               >
                 {products.map((product) => (
                   <Card
                     hoverable
                     key={product._id}
-                    className="col-span-3 relative text-center border shadow-md min-w-[200px] cursor-pointer group"
+                    className="flex-shrink-0 w-[250px] relative text-center border shadow-md cursor-pointer group hover:shadow-lg transition-shadow"
                     onClick={() => navigate(`/${product.product_slug}`)}
-                    
                   >
                     <img
                       src={modifyImageDimensions(
@@ -56,8 +57,8 @@ function ProductSlide({ products, title, href }) {
                         370,
                         270
                       )}
-                      className="object-cover"
-                      alt="product"
+                      className="object-cover w-full h-[200px]"
+                      alt={product.product_name}
                     />
                     <p className="text-base line-clamp-2 text-essential-800 ease-linear text-ellipsis overflow-hidden font-medium mt-3">
                       {product.product_name}
@@ -69,7 +70,7 @@ function ProductSlide({ products, title, href }) {
                 ))}
               </div>
               <button
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-full shadow-lg z-10"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-full shadow-lg z-10 hover:bg-gray-300 transition-colors"
                 onClick={() => scroll("right")}
               >
                 <RightOutlined />
@@ -77,15 +78,13 @@ function ProductSlide({ products, title, href }) {
             </div>
           </div>
           <Button
-            classNames="w-fit"
+            type="link"
             style={{
               width: "fit-content",
               margin: "0 auto",
               display: "flex",
             }}
-            link
             href={href}
-            className="w-full"
           >
             Xem thêm
           </Button>

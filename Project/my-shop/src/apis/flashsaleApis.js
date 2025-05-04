@@ -24,6 +24,12 @@ export const flashsaleApi = createApi({
       }),
       providesTags: ["flashsale"],
     }),
+    getFlashsaleById: builder.query({
+      query: (id) => ({
+        url: `/flashsale/${id}`,
+        method: "GET",
+      }),
+    }),
     createFlashsale: builder.mutation({
       query: (data) => ({
         url: "/flashsale",
